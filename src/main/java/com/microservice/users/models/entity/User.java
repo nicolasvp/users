@@ -41,7 +41,7 @@ public class User implements Serializable {
 	@Size(min=1, max=100, message="debe tener entre 1 y 50 caracteres")
 	private String password;
 	
-	@Column(name="creatd_at")
+	@Column(name="created_at")
 	private Date createdAt;
 	
 	// Set current date for createdAt field
