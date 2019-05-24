@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @FeignClient(name="PHRASES-SERVICE") // Service name registered on Eureka Server
 public interface IPhraseRemoteCallService {
+	
 	@RequestMapping(method=RequestMethod.GET, value="/api/service-route")
 	public String getServiceRoute();
+	
 }

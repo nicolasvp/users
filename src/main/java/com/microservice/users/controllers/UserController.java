@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.microservice.users.models.entity.User;
 import com.microservice.users.models.services.IUserService;
-import com.microservice.users.models.services.remote.IPhraseRemoteCallService;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @RestController
 @RequestMapping("/api")
@@ -20,9 +18,6 @@ public class UserController {
 	
 	@Autowired
 	private IUserService userService;
-	
-	@Autowired
-	private IPhraseRemoteCallService loadBalancer;
 	
 	@GetMapping("/users")
 	public List<User> index(){
@@ -34,15 +29,8 @@ public class UserController {
 		return "Hi from users service";
 	}
 	
-	@HystrixCommand(fallbackMethod = "unavailableMessage")
 	@GetMapping("/users/phrases")
 	public String users(){
-		LOGGER.info("Invoking phrases service from users service");
-		String response = loadBalancer.getServiceRoute();
-		return response;
-	}
-		
-	public String unavailableMessage() {
-		return "Phrases service is not available";
+		return userService.callPhraseService();
 	}
 }

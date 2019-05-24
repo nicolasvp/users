@@ -12,4 +12,8 @@ public interface IUserService {
 	public User save(User user);
 	
 	public void delete(Long id);
+	
+	public String callPhraseService();
+	
+	public String unavailableMessage();
 }
