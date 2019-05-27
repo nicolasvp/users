@@ -17,8 +17,8 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Table(name="user_history")
-public class History implements Serializable {
+@Table(name="user_likes")
+public class Likes implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -26,7 +26,7 @@ public class History implements Serializable {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user_history"})
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user_likes"})
 	@NotNull(message="no puede estar vacío")
 	@ManyToOne(fetch=FetchType.LAZY)
 	private User user;

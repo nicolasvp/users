@@ -31,6 +31,10 @@ public class Favorite implements Serializable {
 	@ManyToOne(fetch=FetchType.LAZY)
 	private User user;
 	
+	@NotNull(message="no puede estar vacío")
+	@Column(name="phrase_id")
+	private Long phraseId;
+	
 	@Column(name="created_at")
 	private Date createdAt;
 	
@@ -62,5 +66,13 @@ public class Favorite implements Serializable {
 
 	public void setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
+	}
+
+	public Long getPhraseId() {
+		return phraseId;
+	}
+
+	public void setPhraseId(Long phraseId) {
+		this.phraseId = phraseId;
 	}	
 }

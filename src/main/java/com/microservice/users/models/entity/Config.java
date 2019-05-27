@@ -76,8 +76,4 @@ public class Config implements Serializable {
 	public void setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
 	}
-
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
 }
