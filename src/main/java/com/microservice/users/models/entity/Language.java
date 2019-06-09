@@ -5,14 +5,19 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Table(name="languages")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "config"})
 public class Language implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -24,9 +29,16 @@ public class Language implements Serializable {
 	@Column(unique=true)
 	private String name;
 	
+	@OneToOne(fetch=FetchType.LAZY)
+    private Config config;
+	
 	@Column(name="created_at")
 	private Date createdAt;
 	
+	public Language() {
+		super();
+	}
+
 	// Set current date for createdAt field
 	@PrePersist
 	public void prePersist() {
@@ -55,5 +67,13 @@ public class Language implements Serializable {
 
 	public void setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
+	}
+
+	public Config getConfig() {
+		return config;
+	}
+
+	public void setConfig(Config config) {
+		this.config = config;
 	}
 }

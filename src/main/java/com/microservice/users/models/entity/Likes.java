@@ -9,6 +9,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name="user_likes")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user"})
 public class Likes implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -26,9 +28,9 @@ public class Likes implements Serializable {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user_likes"})
 	@NotNull(message="no puede estar vacío")
 	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="user_id")
 	private User user;
 	
 	@NotNull(message="no puede estar vacío")
@@ -42,6 +44,10 @@ public class Likes implements Serializable {
 	@PrePersist
 	public void prePersist() {
 		createdAt = new Date();
+	}
+
+	public Likes() {
+		super();
 	}
 
 	public Long getId() {

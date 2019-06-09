@@ -2,19 +2,30 @@ package com.microservice.users.models.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name="users")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "likes", "history", "favorities"})
 public class User implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -44,6 +55,26 @@ public class User implements Serializable {
 	@Column(name="created_at")
 	private Date createdAt;
 	
+	@OneToOne(mappedBy="user", fetch=FetchType.LAZY)
+    private Config config;
+    
+	@OneToMany(fetch=FetchType.LAZY, mappedBy="user", cascade=CascadeType.ALL)
+    private List<History> history;
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="rol_id")
+	private Rol rol;
+	
+	@OneToMany(fetch=FetchType.LAZY, mappedBy="user", cascade=CascadeType.ALL)
+	private List<Likes> likes;
+	
+	@OneToMany(fetch=FetchType.LAZY, mappedBy="user", cascade=CascadeType.ALL)
+	private List<Favorite> favorities;
+	
+	public User() {
+		super();
+	}
+
 	// Set current date for createdAt field
 	@PrePersist
 	public void prePersist() {
@@ -90,11 +121,43 @@ public class User implements Serializable {
 		this.password = password;
 	}
 
+	public Config getConfig() {
+		return config;
+	}
+
+	public void setConfig(Config config) {
+		this.config = config;
+	}
+	
 	public Date getCreatedAt() {
 		return createdAt;
 	}
 
 	public void setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
+	}
+
+	public List<History> getHistory() {
+		return history;
+	}
+
+	public void setHistory(List<History> history) {
+		this.history = history;
+	}
+
+	public Rol getRol() {
+		return rol;
+	}
+
+	public void setRol(Rol rol) {
+		this.rol = rol;
+	}
+
+	public List<Likes> getLikes() {
+		return likes;
+	}
+
+	public void setLikes(List<Likes> likes) {
+		this.likes = likes;
 	}
 }

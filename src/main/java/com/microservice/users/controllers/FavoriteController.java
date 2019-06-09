@@ -3,7 +3,6 @@ package com.microservice.users.controllers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -24,48 +23,30 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.microservice.users.models.entity.Favorite;
-import com.microservice.users.models.entity.History;
-import com.microservice.users.models.entity.User;
 import com.microservice.users.models.services.IFavoriteService;
-import com.microservice.users.models.services.IHistoryService;
-import com.microservice.users.models.services.IUserService;
-import com.microservice.users.models.services.remote.entity.Phrase;
 
 @RestController
 @RequestMapping("/api")
-public class UserController {
-
-	protected Logger LOGGER = Logger.getLogger(UserController.class.getName());
+public class FavoriteController {
+	
+	protected Logger LOGGER = Logger.getLogger(FavoriteController.class.getName());
 	
 	@Autowired
-	private IUserService userService;
+	private IFavoriteService favoriteService;
 	
-	@Autowired
-	private IHistoryService historyService;
-	
-	@GetMapping("/users")
-	public List<User> index(){
-		return userService.findAll();
+	@GetMapping("/favorities")
+	public List<Favorite> index(){
+		return favoriteService.findAll();
 	}
 	
-	@GetMapping("/service-route")
-	public String serviceRoute() {
-		return "Hi from users service";
-	}
-	
-	@GetMapping("/users/phrases")
-	public String users(){
-		return userService.callPhraseService();
-	}
-	
-	@GetMapping("/users/{id}")
+	@GetMapping("/favorities/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		
-		User user = null;
+		Favorite favorite = null;
 		Map<String, Object> response = new HashMap<>();
 
 		try {
-			user = userService.findById(id);
+			favorite = favoriteService.findById(id);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al realizar la consulta en la base de datos");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
@@ -73,18 +54,18 @@ public class UserController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 		}
 
-		if (user == null) {
+		if (favorite == null) {
 			response.put("msg", "El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity<User>(user, HttpStatus.OK);
+		return new ResponseEntity<Favorite>(favorite, HttpStatus.OK);
 	}
 	
-	@PostMapping("/users")
-	public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult result) {
+	@PostMapping("/favorities")
+	public ResponseEntity<?> create(@Valid @RequestBody Favorite favorite, BindingResult result) {
 		
-		User newUser = null;
+		Favorite newFavorite = null;
 		Map<String, Object> response = new HashMap<>();
 
 		// Si no pasa la validación entonces lista los errores y los retorna
@@ -99,7 +80,7 @@ public class UserController {
 		}
 		
 		try {
-			newUser = userService.save(user);
+			newFavorite = favoriteService.save(favorite);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al intentar guardar el registro");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
@@ -108,16 +89,16 @@ public class UserController {
 		}
 
 		response.put("msg", "Registro creado con éxito");
-		response.put("user", newUser);
+		response.put("favorite", newFavorite);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 	
-	@PutMapping("/users/{id}")
-	public ResponseEntity<?> update(@Valid @RequestBody User user, BindingResult result, @PathVariable("id") Long id) {
+	@PutMapping("/favorities/{id}")
+	public ResponseEntity<?> update(@Valid @RequestBody Favorite favorite, BindingResult result, @PathVariable("id") Long id) {
 		
-		User userFromDB = userService.findById(id);
-		User userUpdated = null;
+		Favorite favoriteFromDB = favoriteService.findById(id);
+		Favorite favoriteUpdated = null;
 		Map<String, Object> response = new HashMap<>();
 
 		// Si no pasa la validación entonces lista los errores y los retorna
@@ -132,17 +113,15 @@ public class UserController {
 		}
 		
 		// Si no se encontró el registro devuelve un error
-		if (userFromDB == null) {
+		if (favoriteFromDB == null) {
 			response.put("msg", "El registro no existe en la base de datos");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
-			userFromDB.setName(user.getName());
-			userFromDB.setLastName(user.getLastName());
-			userFromDB.setEmail(user.getEmail());
-			userFromDB.setPassword(user.getPassword());
-			userUpdated = userService.save(userFromDB);
+			favoriteFromDB.setUser(favorite.getUser());
+			favoriteFromDB.setPhraseId(favorite.getPhraseId());
+			favoriteUpdated = favoriteService.save(favoriteFromDB);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al intentar actualizar el registro en la base de datos");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
@@ -150,18 +129,18 @@ public class UserController {
 		}
 
 		response.put("msg", "Registro actualizado con éxito");
-		response.put("user", userUpdated);
+		response.put("favorite", favoriteUpdated);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/users/{id}")
+	@DeleteMapping("/favorities/{id}")
 	public ResponseEntity<?> delete(@PathVariable("id") Long id) {
 		
 		Map<String, Object> response = new HashMap<>();
 
 		try {
-			userService.delete(id);
+			favoriteService.delete(id);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al intentar eliminar el registro en la base de datos, el registro no existe");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
@@ -171,72 +150,5 @@ public class UserController {
 		response.put("msg", "Registro eliminado con éxito");
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
-	}
-	
-	/*
-	 * Pick a random phrase for every user based on his config phrase type and asigned to his history
-	 */
-	@GetMapping("/users/set-phrases-to-users")
-	public ResponseEntity<?> setPhrasesToUsers() {
-		Map<String, Object> response = new HashMap<>();
-		List<User> allUsers = userService.findAll();
-		List<Phrase> allPhrases = userService.getAllPhrases();
-		Map<String, String> phrasesAsignedToUsers = new HashMap<>();
-		
-		for(User user: allUsers) {
-			History newUserHistory = new History();
-			Integer userPhraseType = user.getConfig().getPhraseType();
-			List<History> userHistory = user.getHistory();
-			List<Phrase> filteredPhrases = filterPhrasesByType(allPhrases, userPhraseType);
-			List<Phrase> availablePhrasesForUser = filterPhraseByAvailability(filteredPhrases, userHistory);
-			
-			if(availablePhrasesForUser.size() > 0) {
-				Random randomElement = new Random();
-				Phrase randomPhraseSelected = availablePhrasesForUser.get(randomElement.nextInt(availablePhrasesForUser.size()));
-				
-				try {
-					newUserHistory.setPhraseId(randomPhraseSelected.getId());
-					newUserHistory.setUser(user);
-					historyService.save(newUserHistory);
-				} catch (DataAccessException e) {
-					response.put("msg", "Error al intentar guardar el registro");
-					response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-					return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-				}
-
-				phrasesAsignedToUsers.put(user.getName(), randomPhraseSelected.getBody());
-				//LOGGER.info("USER: " + user.getName());
-				//LOGGER.info("CHOSEN PHRASE: " + randomPhraseSelected.getBody());	
-			}
-		}
-		
-		response.put("phrasesAsigned", phrasesAsignedToUsers);
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
-	}
-	
-	/*
-	 * Filter the phrase list based on the user phrase type
-	 */
-	private List<Phrase> filterPhrasesByType(List<Phrase> allPhrases, Integer phraseType){
-		return allPhrases
-				.stream()
-				.filter(phrase -> {
-					Long phraseTypeCastedToLong = Long.valueOf(phraseType.longValue());
-					if(phrase.getType().getId().equals(phraseTypeCastedToLong)) {
-						return true;
-					}
-					return false;
-				})
-				.collect(Collectors.toList());
-	}
-	
-	/*
-	 * Filter the phrase list based on the user history list, if the user has the phrase on this history then its removed from the "allPhrases" list
-	 */
-	private List<Phrase> filterPhraseByAvailability(List<Phrase> allPhrases, List<History> userHistory) {
-		for(History history: userHistory) {
-			allPhrases.removeIf(phrase -> (history.getPhraseId().equals(phrase.getId())));
-		}
-		return allPhrases;
 	}
 }

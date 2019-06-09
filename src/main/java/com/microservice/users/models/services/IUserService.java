@@ -1,7 +1,9 @@
 package com.microservice.users.models.services;
 
 import java.util.List;
+
 import com.microservice.users.models.entity.User;
+import com.microservice.users.models.services.remote.entity.Phrase;
 
 public interface IUserService {
 
@@ -16,4 +18,8 @@ public interface IUserService {
 	public String callPhraseService();
 	
 	public String unavailableMessage();
+	
+	public List<Phrase> getAllPhrases();
+	
+	public List<Phrase> shitHole();
 }

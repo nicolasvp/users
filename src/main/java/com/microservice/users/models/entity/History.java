@@ -9,6 +9,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name="user_history")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user"})
 public class History implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -26,9 +28,9 @@ public class History implements Serializable {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user_history"})
 	@NotNull(message="no puede estar vacío")
 	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="user_id")
 	private User user;
 	
 	@NotNull(message="no puede estar vacío")
@@ -38,6 +40,10 @@ public class History implements Serializable {
 	@Column(name="created_at")
 	private Date createdAt;
 	
+	public History() {
+		super();
+	}
+
 	// Set current date for createdAt field
 	@PrePersist
 	public void prePersist() {
