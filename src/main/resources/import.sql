@@ -15,7 +15,7 @@ INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, cre
 INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(2, 1, 2, 1, NOW());
 INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(3, 1, 1, 1, NOW());
 INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(4, 1, 2, 1, NOW());
-INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(5, 1, 1, 1, NOW());
+INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(5, 1, 0, 1, NOW());
 
 INSERT INTO user_history (user_id, phrase_id, created_at) VALUES(1, 1, NOW());
 INSERT INTO user_history (user_id, phrase_id, created_at) VALUES(1, 2, NOW());

@@ -3,12 +3,14 @@ package com.microservice.users.models.services;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.microservice.users.models.dao.IUserDao;
+import com.microservice.users.models.entity.History;
 import com.microservice.users.models.entity.User;
 import com.microservice.users.models.services.remote.IPhraseRemoteCallService;
 import com.microservice.users.models.services.remote.entity.Phrase;
@@ -51,27 +53,46 @@ public class UserServiceImpl implements IUserService{
 	@HystrixCommand(fallbackMethod = "unavailableMessage")
 	public String callPhraseService() {
 		LOGGER.info("Invoking phrases service from users service");
-		String response = remoteCaller.getServiceRoute();
-		return response;
+		return remoteCaller.getServiceRoute();
 	}
 
 	@Override
-	@HystrixCommand(fallbackMethod = "shitHole")
+	@HystrixCommand(fallbackMethod = "getAllPhrasesFail")
 	public List<Phrase> getAllPhrases() {
 		LOGGER.info("Getting all phrases from phrase service");
-		List<Phrase> response = remoteCaller.getAllPhrases();
-		return response;
+		return remoteCaller.getAllPhrases();
 	}
 	
 	@Override
-	public List<Phrase> shitHole() {
-		List<Phrase> response = new ArrayList<>();
-		return response;
+	public List<Phrase> getAllPhrasesFail() {
+		return new ArrayList<>();
 	}
 	
 	@Override
 	public String unavailableMessage() {
 		return "Phrases service is not available";
+	}
+
+	@Override
+	public List<Phrase> filterPhrasesByType(List<Phrase> allPhrases, Integer phraseType) {
+		if(!phraseType.equals(0)) {
+			return allPhrases
+					.stream()
+					.filter(phrase -> {
+						Long phraseTypeCastedToLong = Long.valueOf(phraseType.longValue());
+						return phrase.getType().getId().equals(phraseTypeCastedToLong);
+					})
+					.collect(Collectors.toList());
+		}
+		return allPhrases;
+	}
+
+	@Override
+	public List<Phrase> filterPhraseByAvailability(List<Phrase> allPhrases, List<History> userHistory) {
+		for(History history: userHistory) {
+			allPhrases.removeIf(phrase -> (history.getPhraseId().equals(phrase.getId())));
+		}
+		return allPhrases;
 	}
 
 }
