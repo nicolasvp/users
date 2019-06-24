@@ -10,6 +10,16 @@ public class Type {
 	
 	private Date createdAt;
 
+	public Type(){
+		super();
+	}
+
+	public Type(Long id, String name, Date createdAt) {
+		this.id = id;
+		this.name = name;
+		this.createdAt = createdAt;
+	}
+
 	public Long getId() {
 		return id;
 	}

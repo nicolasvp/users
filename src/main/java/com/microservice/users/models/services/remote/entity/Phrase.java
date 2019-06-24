@@ -14,7 +14,20 @@ public class Phrase {
 	private Author author;
 	
 	private Image image;
-	
+
+	public Phrase(){
+		super();
+	}
+
+	public Phrase(Long id, String body, Long likesCounter, Type type, Author author, Image image){
+		this.id = id;
+		this.body = body;
+		this.likesCounter = likesCounter;
+		this.type = type;
+		this.author = author;
+		this.image = image;
+	}
+
 	public Long getId() {
 		return id;
 	}

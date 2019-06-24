@@ -39,6 +39,12 @@ public class Language implements Serializable {
 		super();
 	}
 
+	public Language(String name, Config config, Date createdAt) {
+		this.name = name;
+		this.config = config;
+		this.createdAt = createdAt;
+	}
+
 	// Set current date for createdAt field
 	@PrePersist
 	public void prePersist() {

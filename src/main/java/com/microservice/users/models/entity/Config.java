@@ -28,8 +28,7 @@ public class Config implements Serializable {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
-	
-	@NotNull(message="no puede estar vacío")
+
 	@OneToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="user_id", referencedColumnName="id")
 	private User user;
@@ -49,6 +48,14 @@ public class Config implements Serializable {
 	
 	public Config() {
 		super();
+	}
+
+	public Config(User user, Language language, int phraseType, boolean activatePlugin, Date createdAt) {
+		this.user = user;
+		this.language = language;
+		this.phraseType = phraseType;
+		this.activatePlugin = activatePlugin;
+		this.createdAt = createdAt;
 	}
 
 	// Set current date for createdAt field

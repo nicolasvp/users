@@ -39,15 +39,21 @@ public class Likes implements Serializable {
 	
 	@Column(name="created_at")
 	private Date createdAt;
-	
+
+	public Likes() {
+		super();
+	}
+
+	public Likes(User user, Long phraseId, Date createdAt) {
+		this.user = user;
+		this.phraseId = phraseId;
+		this.createdAt = createdAt;
+	}
+
 	// Set current date for createdAt field
 	@PrePersist
 	public void prePersist() {
 		createdAt = new Date();
-	}
-
-	public Likes() {
-		super();
 	}
 
 	public Long getId() {

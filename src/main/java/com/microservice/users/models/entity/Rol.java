@@ -50,6 +50,13 @@ public class Rol implements Serializable {
 		super();
 	}
 
+	public Rol(String name, String description, List<User> user, Date createdAt) {
+		this.name = name;
+		this.description = description;
+		this.user = user;
+		this.createdAt = createdAt;
+	}
+
 	// Set current date for createdAt field
 	@PrePersist
 	public void prePersist() {

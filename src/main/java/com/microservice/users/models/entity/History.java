@@ -27,14 +27,13 @@ public class History implements Serializable {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
-	
-	@NotNull(message="no puede estar vacío")
+
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="user_id")
 	private User user;
-	
-	@NotNull(message="no puede estar vacío")
+
 	@Column(name="phrase_id")
+	@NotNull(message="no puede estar vacío")
 	private Long phraseId;
 	
 	@Column(name="created_at")
@@ -42,6 +41,12 @@ public class History implements Serializable {
 	
 	public History() {
 		super();
+	}
+
+	public History(User user, Long phraseId, Date createdAt) {
+		this.user = user;
+		this.phraseId = phraseId;
+		this.createdAt = createdAt;
 	}
 
 	// Set current date for createdAt field

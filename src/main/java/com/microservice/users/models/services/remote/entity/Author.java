@@ -10,6 +10,16 @@ public class Author {
 	
 	private Date createdAt;
 
+	public Author(){
+		super();
+	}
+
+	public Author(Long id, String name, Date createdAt) {
+		this.id = id;
+		this.name = name;
+		this.createdAt = createdAt;
+	}
+
 	public Long getId() {
 		return id;
 	}

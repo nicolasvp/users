@@ -27,14 +27,14 @@ public class Favorite implements Serializable {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
-	
-	@NotNull(message="no puede estar vacío")
+
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="user_id")
-	private User user;
-	
 	@NotNull(message="no puede estar vacío")
+	private User user;
+
 	@Column(name="phrase_id")
+	@NotNull(message="no puede estar vacío")
 	private Long phraseId;
 	
 	@Column(name="created_at")
@@ -42,6 +42,12 @@ public class Favorite implements Serializable {
 	
 	public Favorite() {
 		super();
+	}
+
+	public Favorite(User user, Long phraseId, Date createdAt) {
+		this.user = user;
+		this.phraseId = phraseId;
+		this.createdAt = createdAt;
 	}
 
 	// Set current date for createdAt field
