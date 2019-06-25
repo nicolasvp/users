@@ -50,10 +50,9 @@ public class Rol implements Serializable {
 		super();
 	}
 
-	public Rol(String name, String description, List<User> user, Date createdAt) {
+	public Rol(String name, String description, Date createdAt) {
 		this.name = name;
 		this.description = description;
-		this.user = user;
 		this.createdAt = createdAt;
 	}
 

@@ -11,6 +11,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,17 +31,16 @@ import com.microservice.users.models.services.IRolService;
 public class RolController {
 
 	protected Logger LOGGER = Logger.getLogger(RolController.class.getName());
-	private static final String ERROR = "ERROR";
 	
 	@Autowired
 	private IRolService rolService;
 	
-	@GetMapping("/roles")
+	@GetMapping(path="/roles", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<Rol> index(){
 		return rolService.findAll();
 	}
 	
-	@GetMapping("/roles/{id}")
+	@GetMapping(path="/roles/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		
 		Rol rol = null;
@@ -50,9 +50,7 @@ public class RolController {
 			rol = rolService.findById(id);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al realizar la consulta en la base de datos");
-			response.put(ERROR, e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		if (rol == null) {
@@ -63,7 +61,7 @@ public class RolController {
 		return new ResponseEntity<Rol>(rol, HttpStatus.OK);
 	}
 	
-	@PostMapping("/roles")
+	@PostMapping(path="/roles", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> create(@Valid @RequestBody Rol rol, BindingResult result) {
 		
 		Rol newRol = null;
@@ -84,8 +82,6 @@ public class RolController {
 			newRol = rolService.save(rol);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al intentar guardar el registro");
-			response.put(ERROR, e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
@@ -95,7 +91,7 @@ public class RolController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 	
-	@PutMapping("/roles/{id}")
+	@PutMapping(path="/roles/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> update(@Valid @RequestBody Rol rol, BindingResult result, @PathVariable("id") Long id) {
 		
 		Rol rolFromDB = rolService.findById(id);
@@ -125,7 +121,6 @@ public class RolController {
 			rolUpdated = rolService.save(rolFromDB);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al intentar actualizar el registro en la base de datos");
-			response.put(ERROR, e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
@@ -135,7 +130,7 @@ public class RolController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/roles/{id}")
+	@DeleteMapping(path="/roles/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> delete(@PathVariable("id") Long id) {
 		
 		Map<String, Object> response = new HashMap<>();
@@ -144,7 +139,6 @@ public class RolController {
 			rolService.delete(id);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al intentar eliminar el registro en la base de datos, el registro no existe");
-			response.put(ERROR, e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
