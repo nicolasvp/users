@@ -37,7 +37,6 @@ import com.microservice.users.models.services.remote.entity.Phrase;
 public class UserController {
 
 	protected Logger LOGGER = Logger.getLogger(UserController.class.getName());
-	private static final String ERROR = "ERROR";
 	
 	@Autowired
 	private IUserService userService;
@@ -49,12 +48,7 @@ public class UserController {
 	public List<User> index(){
 		return userService.findAll();
 	}
-	
-	@GetMapping("/service-route")
-	public String serviceRoute() {
-		return "Hi from users service";
-	}
-	
+
 	@GetMapping(path="/users/phrases", produces = MediaType.APPLICATION_JSON_VALUE)
 	public String users(){
 		return userService.callPhraseService();
@@ -70,9 +64,7 @@ public class UserController {
 			user = userService.findById(id);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al realizar la consulta en la base de datos");
-			response.put(ERROR, e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		if (user == null) {
@@ -104,8 +96,6 @@ public class UserController {
 			newUser = userService.save(user);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al intentar guardar el registro");
-			response.put(ERROR, e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
@@ -129,7 +119,7 @@ public class UserController {
 					.map(err -> "El campo " + err.getField() + " " + err.getDefaultMessage())
 					.collect(Collectors.toList());
 			
-			response.put(ERROR, errors);
+			response.put("errors", errors);
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
@@ -147,7 +137,6 @@ public class UserController {
 			userUpdated = userService.save(userFromDB);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al intentar actualizar el registro en la base de datos");
-			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
@@ -166,7 +155,6 @@ public class UserController {
 			userService.delete(id);
 		} catch (DataAccessException e) {
 			response.put("msg", "Error al intentar eliminar el registro en la base de datos, el registro no existe");
-			response.put(ERROR, e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
@@ -202,7 +190,6 @@ public class UserController {
 					historyService.save(newUserHistory);
 				} catch (DataAccessException e) {
 					response.put("msg", "Error al intentar guardar el registro");
-					response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 					return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 

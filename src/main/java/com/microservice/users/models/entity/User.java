@@ -49,7 +49,7 @@ public class User implements Serializable {
 	private String email;
 	
 	@NotEmpty(message="no puede estar vacío")
-	@Size(min=1, max=100, message="debe tener entre 1 y 50 caracteres")
+	@Size(min=1, max=100, message="debe tener entre 1 y 100 caracteres")
 	private String password;
 	
 	@Column(name="created_at")

@@ -16,28 +16,25 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.mockito.ArgumentMatchers.any;
 
-public class UserControllerTest  {
+public class UserControllerTest {
 
     // Simulate HTTP requests
     private MockMvc mockMvc;
@@ -65,6 +62,8 @@ public class UserControllerTest  {
     private Phrase phrase2;
     private Phrase phrase3;
 
+    private User invalidUser = new User();
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -73,9 +72,10 @@ public class UserControllerTest  {
                 .build();
         createDummyUsers();
         createDummyPhrases();
+        setInvalidUser();
     }
 
-    private void createDummyUsers(){
+    private void createDummyUsers() {
         user1.setId(1L);
         user1.setName("USER 1");
         user1.setLastName("LASTNAME 1");
@@ -97,7 +97,7 @@ public class UserControllerTest  {
         dummyUsers = Arrays.asList(user1, user2, user3);
     }
 
-    private void createDummyPhrases(){
+    private void createDummyPhrases() {
         phrase1 = new Phrase(1L, "TEST1", 1L, new Type(1L, "test1", new Date()), new Author(), new Image());
         phrase2 = new Phrase(2L, "TEST2", 2L, new Type(2L, "test2", new Date()), new Author(), new Image());
         phrase3 = new Phrase(3L, "TEST3", 3L, new Type(3L, "test3", new Date()), new Author(), new Image());
@@ -120,8 +120,10 @@ public class UserControllerTest  {
         verifyNoMoreInteractions(userService);
     }
 
+    /* BEGIN SHOW userController method tests */
+
     @Test
-    public void show_whenItsOk() throws Exception {
+    public void show_withProperId() throws Exception {
         when(userService.findById(1L)).thenReturn(user1);
 
         mockMvc.perform(get("/api/users/{id}", 1))
@@ -136,7 +138,42 @@ public class UserControllerTest  {
     }
 
     @Test
-    public void create_whenItsOk() throws Exception {
+    public void show_whenIdIsInvalid() throws Exception {
+        mockMvc.perform(get("/api/users/{id}", "randomString"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void show_whenRecordDoesnotExist() throws Exception {
+        when(userService.findById(999999L)).thenReturn(null);
+        mockMvc.perform(get("/api/users/{id}", 999999))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg", is("El registro con ID: 999999 no existe en la base de datos")))
+                .andExpect(status().isNotFound());
+
+        verify(userService, times(1)).findById(999999L);
+        verifyNoMoreInteractions(userService);
+    }
+
+    @Test
+    public void show_whenDBFailsThenThrowsException() throws Exception {
+        when(userService.findById(1L)).thenThrow(new DataAccessException("..."){});
+        mockMvc.perform(get("/api/users/{id}", 1))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg", is("Error al realizar la consulta en la base de datos")))
+                .andExpect(status().isInternalServerError());
+
+        verify(userService, times(1)).findById(1L);
+        verifyNoMoreInteractions(userService);
+    }
+
+    /* END SHOW userController method tests */
+
+
+    /* BEGIN CREATE userController method tests */
+
+    @Test
+    public void create_withProperUser() throws Exception {
         when(userService.save(any(User.class))).thenReturn(user1);
 
         mockMvc.perform(post("/api/users")
@@ -155,7 +192,58 @@ public class UserControllerTest  {
     }
 
     @Test
-    public void update_whenItsOk() throws Exception {
+    public void create_whenUserIsEmpty() throws Exception {
+        mockMvc.perform(post("/api/users")
+                .content(objectMapper.writeValueAsString(new User()))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasSize(4)))
+                .andExpect(jsonPath("$.errors", hasItem("El campo name no puede estar vacío")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo email no puede estar vacío")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo lastName no puede estar vacío")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo password no puede estar vacío")));
+    }
+
+    @Test
+    public void create_whenUserHasInvalidParams() throws Exception {
+        mockMvc.perform(post("/api/users")
+                .content(objectMapper.writeValueAsString(invalidUser))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasSize(4)))
+                .andExpect(jsonPath("$.errors", hasItem("El campo name debe tener entre 1 y 50 caracteres")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo email debe tener entre 1 y 30 caracteres")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo lastName debe tener entre 1 y 50 caracteres")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo password debe tener entre 1 y 100 caracteres")));
+    }
+
+    @Test
+    public void create_whenDBFailsThenThrowsException() throws Exception {
+        when(userService.save(any(User.class))).thenThrow(new DataAccessException("..."){});
+
+        mockMvc.perform(post("/api/users")
+                .content(objectMapper.writeValueAsString(user1))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg", is("Error al intentar guardar el registro")))
+                .andExpect(status().isInternalServerError());
+
+        verify(userService, times(1)).save(any(User.class));
+        verifyNoMoreInteractions(userService);
+    }
+
+    /* END CREATE userController method tests */
+
+
+    /* BEGIN UPDATE userController method tests */
+    @Test
+    public void update_withProperUserAndId() throws Exception {
         when(userService.findById(anyLong())).thenReturn(user1);
         when(userService.save(any(User.class))).thenReturn(user1);
 
@@ -176,7 +264,88 @@ public class UserControllerTest  {
     }
 
     @Test
-    public void delete_whenItOk() throws Exception {
+    public void update_whenUserIsProper_andInvalidId() throws Exception {
+        mockMvc.perform(put("/api/users/{id}", "randomString")
+                .content(objectMapper.writeValueAsString(user1))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void update_whenUserIsEmpty_AndProperId() throws Exception {
+        mockMvc.perform(put("/api/users/{id}", 1)
+                .content(objectMapper.writeValueAsString(new User()))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasSize(4)))
+                .andExpect(jsonPath("$.errors", hasItem("El campo name no puede estar vacío")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo email no puede estar vacío")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo lastName no puede estar vacío")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo password no puede estar vacío")));
+    }
+
+    @Test
+    public void update_whenUserIsInvalid_AndProperId() throws Exception {
+
+        mockMvc.perform(put("/api/users/{id}", 1)
+                .content(objectMapper.writeValueAsString(invalidUser))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasSize(4)))
+                .andExpect(jsonPath("$.errors", hasItem("El campo name debe tener entre 1 y 50 caracteres")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo email debe tener entre 1 y 30 caracteres")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo lastName debe tener entre 1 y 50 caracteres")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo password debe tener entre 1 y 100 caracteres")));
+    }
+
+    @Test
+    public void update_whenUserIsNotFound() throws Exception {
+        when(userService.findById(anyLong())).thenReturn(null);
+
+        mockMvc.perform(put("/api/users/{id}", anyLong())
+                .content(objectMapper.writeValueAsString(user1))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.msg", is("El registro no existe en la base de datos")));
+
+        verify(userService, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(userService);
+    }
+
+    @Test
+    public void update_whenDBFailsThenThrowsException() throws Exception {
+        when(userService.save(any(User.class))).thenThrow(new DataAccessException("..."){});
+        when(userService.findById(anyLong())).thenReturn(user1);
+
+        mockMvc.perform(put("/api/users/{id}", 1)
+                .content(objectMapper.writeValueAsString(user1))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg", is("Error al intentar actualizar el registro en la base de datos")))
+                .andExpect(status().isInternalServerError());
+
+        verify(userService, times(1)).save(any(User.class));
+        verify(userService, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(userService);
+    }
+
+    /* END UPDATE userController method tests */
+
+
+    /* BEGIN DELETE userController method tests */
+
+    @Test
+    public void delete_withProperId() throws Exception {
         doNothing().when(userService).delete(anyLong());
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", 1))
@@ -189,16 +358,76 @@ public class UserControllerTest  {
     }
 
     @Test
+    public void delete_withInvalidId() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", "randomString"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void delete_whenUserIsNotFoundThenThrowException() throws Exception {
+        doThrow(new DataAccessException("..."){}).when(userService).delete(anyLong());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", anyLong())
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg", is("Error al intentar eliminar el registro en la base de datos, el registro no existe")))
+                .andExpect(status().isInternalServerError());
+
+        verify(userService, times(1)).delete(anyLong());
+        verifyNoMoreInteractions(userService);
+    }
+
+    /* END DELETE userController method tests */
+
+
+    /* BEGIN SET PHRASES userController method tests */
+
+    @Test
     public void setPhrases_whenItsOk() throws Exception {
         History history = new History(user1, 1L, new Date());
 
         when(userService.findAll()).thenReturn(dummyUsers);
         when(userService.getAllPhrases()).thenReturn(dummyPhrases);
         when(historyService.save(any(History.class))).thenReturn(history);
+        when(userService.filterPhraseByAvailability(anyList(), anyList())).thenReturn(dummyPhrases);
+
+        mockMvc.perform(get("/api/users/set-phrases-to-users")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.phrasesAsigned").exists())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void setPhrases_whenDBFailsThenThrowsException() throws Exception {
+        when(historyService.save(any(History.class))).thenThrow(new DataAccessException("..."){});
+        when(userService.findAll()).thenReturn(dummyUsers);
+        when(userService.getAllPhrases()).thenReturn(dummyPhrases);
+        when(userService.filterPhraseByAvailability(anyList(), anyList())).thenReturn(dummyPhrases);
 
         mockMvc.perform(get("/api/users/set-phrases-to-users")
                 .contentType("application/json"))
-                .andExpect(jsonPath("$.phrasesAsigned").exists())
-                .andExpect(status().isOk());
+                .andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.msg", is("Error al intentar guardar el registro")));
+    }
+
+    /* END SET PHRASES userController method tests */
+
+    /**
+     * User attributes with random and invalid number of characters
+     * name = 60 characters
+     * lastName = 60 characters
+     * email = 31 characters
+     * password = 101 characters
+     */
+    private void setInvalidUser() {
+        invalidUser.setName("EEFzAnTEdWBkhRvB9Xm31D7zklB4qsBjw0NDUTfvBR97t60idBmm2Osyp2WH");
+        invalidUser.setLastName("Cv35EYfqrFXoQH0fhWHHhkeBX15uhxB6bpTM4kAGDjOeWXqjefzai6fFFsIe");
+        invalidUser.setEmail("G8pGOerRmq4t5jj9kLHWKw146rfkROf");
+        invalidUser.setPassword("HqvfGLJWGd4pd563lHalV8pIXCvFsc6bUUi0e5VBu6EkyZOP6jR4L3LoCSg1JKQEr5O8QlHnkCR7HWunPsPRwBoq1bCdPHayvj5Iq\n");
     }
 }
