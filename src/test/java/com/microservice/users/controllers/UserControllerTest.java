@@ -72,6 +72,7 @@ public class UserControllerTest  {
                 .standaloneSetup(userController)
                 .build();
         createDummyUsers();
+        createDummyPhrases();
     }
 
     private void createDummyUsers(){
@@ -120,7 +121,7 @@ public class UserControllerTest  {
     }
 
     @Test
-    public void show() throws Exception {
+    public void show_whenItsOk() throws Exception {
         when(userService.findById(1L)).thenReturn(user1);
 
         mockMvc.perform(get("/api/users/{id}", 1))
@@ -135,7 +136,7 @@ public class UserControllerTest  {
     }
 
     @Test
-    public void create() throws Exception {
+    public void create_whenItsOk() throws Exception {
         when(userService.save(any(User.class))).thenReturn(user1);
 
         mockMvc.perform(post("/api/users")
@@ -154,7 +155,7 @@ public class UserControllerTest  {
     }
 
     @Test
-    public void update() throws Exception {
+    public void update_whenItsOk() throws Exception {
         when(userService.findById(anyLong())).thenReturn(user1);
         when(userService.save(any(User.class))).thenReturn(user1);
 
@@ -175,21 +176,25 @@ public class UserControllerTest  {
     }
 
     @Test
-    public void delete() throws Exception {
+    public void delete_whenItOk() throws Exception {
         doNothing().when(userService).delete(anyLong());
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", 1))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.msg", is("Registro eliminado con éxito")));
 
         verify(userService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(userService);
     }
 
     @Test
-    public void setPhrases() throws Exception {
+    public void setPhrases_whenItsOk() throws Exception {
+        History history = new History(user1, 1L, new Date());
+
         when(userService.findAll()).thenReturn(dummyUsers);
         when(userService.getAllPhrases()).thenReturn(dummyPhrases);
-        //when(historyService.save()).thenReturn();
+        when(historyService.save(any(History.class))).thenReturn(history);
 
         mockMvc.perform(get("/api/users/set-phrases-to-users")
                 .contentType("application/json"))
