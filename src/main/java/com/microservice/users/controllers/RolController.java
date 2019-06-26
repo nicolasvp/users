@@ -69,13 +69,7 @@ public class RolController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
-			List<String> errors = result.getFieldErrors()
-					.stream()
-					.map(err -> "El campo " + err.getField() + " " + err.getDefaultMessage())
-					.collect(Collectors.toList());
-			
-			response.put("errors", errors);
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+			return listErrors(response, result);
 		}
 		
 		try {
@@ -100,13 +94,7 @@ public class RolController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
-			List<String> errors = result.getFieldErrors()
-					.stream()
-					.map(err -> "El campo " + err.getField() + " " + err.getDefaultMessage())
-					.collect(Collectors.toList());
-			
-			response.put("errors", errors);
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+			return listErrors(response, result);
 		}
 		
 		// return error if the record non exist
@@ -145,5 +133,15 @@ public class RolController {
 		response.put("msg", "Registro eliminado con éxito");
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
+	private ResponseEntity<Map<String, Object>> listErrors(Map<String, Object> response, BindingResult result){
+		List<String> errors = result.getFieldErrors()
+				.stream()
+				.map(err -> "El campo " + err.getField() + " " + err.getDefaultMessage())
+				.collect(Collectors.toList());
+
+		response.put("errors", errors);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 	}
 }
