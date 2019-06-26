@@ -7,6 +7,7 @@ import com.microservice.users.models.entity.Language;
 import com.microservice.users.models.entity.User;
 import com.microservice.users.models.services.IHistoryService;
 import com.microservice.users.models.services.IUserService;
+import com.microservice.users.models.services.IUtilService;
 import com.microservice.users.models.services.remote.entity.Author;
 import com.microservice.users.models.services.remote.entity.Image;
 import com.microservice.users.models.services.remote.entity.Phrase;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -48,11 +50,17 @@ public class UserControllerTest {
     @Mock
     private IHistoryService historyService;
 
+    @Mock
+    private IUtilService utilService;
+
     @InjectMocks
     private UserController userController;
 
     private List<User> dummyUsers;
     private List<Phrase> dummyPhrases;
+
+    private List<String> invalidParamsMessages = new ArrayList<>();
+    private List<String> emptyUserMessages = new ArrayList<>();
 
     private User user1 = new User();
     private User user2 = new User();
@@ -73,6 +81,8 @@ public class UserControllerTest {
         createDummyUsers();
         createDummyPhrases();
         setInvalidUser();
+        setInvalidUserParamsMessages();
+        setEmptyUserMessages();
     }
 
     private void createDummyUsers() {
@@ -103,6 +113,34 @@ public class UserControllerTest {
         phrase3 = new Phrase(3L, "TEST3", 3L, new Type(3L, "test3", new Date()), new Author(), new Image());
 
         dummyPhrases = Arrays.asList(phrase1, phrase2, phrase3);
+    }
+
+    /**
+     * User attributes with random and invalid number of characters
+     * name = 60 characters
+     * lastName = 60 characters
+     * email = 31 characters
+     * password = 101 characters
+     */
+    private void setInvalidUser() {
+        invalidUser.setName("EEFzAnTEdWBkhRvB9Xm31D7zklB4qsBjw0NDUTfvBR97t60idBmm2Osyp2WH");
+        invalidUser.setLastName("Cv35EYfqrFXoQH0fhWHHhkeBX15uhxB6bpTM4kAGDjOeWXqjefzai6fFFsIe");
+        invalidUser.setEmail("G8pGOerRmq4t5jj9kLHWKw146rfkROf");
+        invalidUser.setPassword("HqvfGLJWGd4pd563lHalV8pIXCvFsc6bUUi0e5VBu6EkyZOP6jR4L3LoCSg1JKQEr5O8QlHnkCR7HWunPsPRwBoq1bCdPHayvj5Iq\n");
+    }
+
+    private void setInvalidUserParamsMessages() {
+        invalidParamsMessages.add("El campo name debe tener entre 1 y 50 caracteres");
+        invalidParamsMessages.add("El campo email debe tener entre 1 y 30 caracteres");
+        invalidParamsMessages.add("El campo lastName debe tener entre 1 y 50 caracteres");
+        invalidParamsMessages.add("El campo password debe tener entre 1 y 100 caracteres");
+    }
+
+    private void setEmptyUserMessages() {
+        emptyUserMessages.add("El campo name no puede estar vacío");
+        emptyUserMessages.add("El campo email no puede estar vacío");
+        emptyUserMessages.add("El campo lastName no puede estar vacío");
+        emptyUserMessages.add("El campo password no puede estar vacío");
     }
 
     @Test
@@ -193,6 +231,8 @@ public class UserControllerTest {
 
     @Test
     public void create_whenUserIsEmpty() throws Exception {
+        when(utilService.listErrors(any())).thenReturn(emptyUserMessages);
+
         mockMvc.perform(post("/api/users")
                 .content(objectMapper.writeValueAsString(new User()))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -209,6 +249,8 @@ public class UserControllerTest {
 
     @Test
     public void create_whenUserHasInvalidParams() throws Exception {
+        when(utilService.listErrors(any())).thenReturn(invalidParamsMessages);
+
         mockMvc.perform(post("/api/users")
                 .content(objectMapper.writeValueAsString(invalidUser))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -273,10 +315,12 @@ public class UserControllerTest {
 
     @Test
     public void update_whenUserIsEmpty_AndProperId() throws Exception {
+        when(utilService.listErrors(any())).thenReturn(emptyUserMessages);
+
         mockMvc.perform(put("/api/users/{id}", 1)
                 .content(objectMapper.writeValueAsString(new User()))
                 .contentType(MediaType.APPLICATION_JSON))
-                //.andDo(print())
+                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
@@ -289,6 +333,7 @@ public class UserControllerTest {
 
     @Test
     public void update_whenUserIsInvalid_AndProperId() throws Exception {
+        when(utilService.listErrors(any())).thenReturn(invalidParamsMessages);
 
         mockMvc.perform(put("/api/users/{id}", 1)
                 .content(objectMapper.writeValueAsString(invalidUser))
@@ -416,18 +461,4 @@ public class UserControllerTest {
     }
 
     /* END SET PHRASES userController method tests */
-
-    /**
-     * User attributes with random and invalid number of characters
-     * name = 60 characters
-     * lastName = 60 characters
-     * email = 31 characters
-     * password = 101 characters
-     */
-    private void setInvalidUser() {
-        invalidUser.setName("EEFzAnTEdWBkhRvB9Xm31D7zklB4qsBjw0NDUTfvBR97t60idBmm2Osyp2WH");
-        invalidUser.setLastName("Cv35EYfqrFXoQH0fhWHHhkeBX15uhxB6bpTM4kAGDjOeWXqjefzai6fFFsIe");
-        invalidUser.setEmail("G8pGOerRmq4t5jj9kLHWKw146rfkROf");
-        invalidUser.setPassword("HqvfGLJWGd4pd563lHalV8pIXCvFsc6bUUi0e5VBu6EkyZOP6jR4L3LoCSg1JKQEr5O8QlHnkCR7HWunPsPRwBoq1bCdPHayvj5Iq\n");
-    }
 }

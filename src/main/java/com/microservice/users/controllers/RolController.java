@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.microservice.users.models.services.IUtilService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -34,7 +35,10 @@ public class RolController {
 	
 	@Autowired
 	private IRolService rolService;
-	
+
+	@Autowired
+	private IUtilService utilService;
+
 	@GetMapping(path="/roles", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<Rol> index(){
 		return rolService.findAll();
@@ -42,7 +46,7 @@ public class RolController {
 	
 	@GetMapping(path="/roles/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> show(@PathVariable Long id) {
-		
+
 		Rol rol = null;
 		Map<String, Object> response = new HashMap<>();
 
@@ -69,7 +73,8 @@ public class RolController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
-			return listErrors(response, result);
+			response.put("errors", utilService.listErrors(result));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
@@ -94,7 +99,8 @@ public class RolController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
-			return listErrors(response, result);
+			response.put("errors", utilService.listErrors(result));
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
 		// return error if the record non exist
@@ -133,15 +139,5 @@ public class RolController {
 		response.put("msg", "Registro eliminado con éxito");
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
-	}
-
-	private ResponseEntity<Map<String, Object>> listErrors(Map<String, Object> response, BindingResult result){
-		List<String> errors = result.getFieldErrors()
-				.stream()
-				.map(err -> "El campo " + err.getField() + " " + err.getDefaultMessage())
-				.collect(Collectors.toList());
-
-		response.put("errors", errors);
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 	}
 }

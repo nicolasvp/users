@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.microservice.users.models.services.IUtilService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -43,7 +44,10 @@ public class UserController {
 	
 	@Autowired
 	private IHistoryService historyService;
-	
+
+	@Autowired
+	private IUtilService utilService;
+
 	@GetMapping(path="/users", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<User> index(){
 		return userService.findAll();
@@ -83,12 +87,7 @@ public class UserController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
-			List<String> errors = result.getFieldErrors()
-					.stream()
-					.map(err -> "El campo " + err.getField() + " " + err.getDefaultMessage())
-					.collect(Collectors.toList());
-			
-			response.put("errors", errors);
+			response.put("errors", utilService.listErrors(result));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
@@ -114,12 +113,7 @@ public class UserController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
-			List<String> errors = result.getFieldErrors()
-					.stream()
-					.map(err -> "El campo " + err.getField() + " " + err.getDefaultMessage())
-					.collect(Collectors.toList());
-			
-			response.put("errors", errors);
+			response.put("errors", utilService.listErrors(result));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		

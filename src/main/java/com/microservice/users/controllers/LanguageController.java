@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.microservice.users.models.services.IUtilService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -34,7 +35,10 @@ public class LanguageController {
 	
 	@Autowired
 	private ILanguageService languageService;
-		
+
+	@Autowired
+	private IUtilService utilService;
+
 	@GetMapping("/languages")
 	public List<Language> index(){
 		return languageService.findAll();
@@ -72,12 +76,7 @@ public class LanguageController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
-			List<String> errors = result.getFieldErrors()
-					.stream()
-					.map(err -> "El campo " + err.getField() + " " + err.getDefaultMessage())
-					.collect(Collectors.toList());
-			
-			response.put("errors", errors);
+			response.put("errors", utilService.listErrors(result));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
@@ -105,12 +104,7 @@ public class LanguageController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
-			List<String> errors = result.getFieldErrors()
-					.stream()
-					.map(err -> "El campo " + err.getField() + " " + err.getDefaultMessage())
-					.collect(Collectors.toList());
-			
-			response.put("errors", errors);
+			response.put("errors", utilService.listErrors(result));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
