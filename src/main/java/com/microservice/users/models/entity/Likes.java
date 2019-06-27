@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name="user_likes")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Likes implements Serializable {
 
 	private static final long serialVersionUID = 1L;

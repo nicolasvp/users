@@ -33,7 +33,7 @@ public class Rol implements Serializable {
 	
 	@Column(unique=true)
 	@NotEmpty(message="no puede estar vacío")
-	@Size(min=1, max=100, message="debe tener entre 1 y 100 caracteres")
+	@Size(min=1, max=20, message="debe tener entre 1 y 100 caracteres")
 	private String name;
 	
 	@NotEmpty(message="no puede estar vacío")

@@ -6,12 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import com.microservice.users.models.services.IUtilService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -37,7 +38,7 @@ import com.microservice.users.models.services.remote.entity.Phrase;
 @RequestMapping("/api")
 public class UserController {
 
-	protected Logger LOGGER = Logger.getLogger(UserController.class.getName());
+	protected Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 	
 	@Autowired
 	private IUserService userService;
@@ -67,11 +68,13 @@ public class UserController {
 		try {
 			user = userService.findById(id);
 		} catch (DataAccessException e) {
+			LOGGER.error("Error al realizar la consulta en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			response.put("msg", "Error al realizar la consulta en la base de datos");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		if (user == null) {
+			LOGGER.warn("El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
 			response.put("msg", "El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
@@ -94,6 +97,7 @@ public class UserController {
 		try {
 			newUser = userService.save(user);
 		} catch (DataAccessException e) {
+			LOGGER.error("Error al intentar guardar el registro: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			response.put("msg", "Error al intentar guardar el registro");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -119,6 +123,7 @@ public class UserController {
 		
 		// return error if the record non exist
 		if (userFromDB == null) {
+			LOGGER.warn("El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
 			response.put("msg", "El registro no existe en la base de datos");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
@@ -130,6 +135,7 @@ public class UserController {
 			userFromDB.setPassword(user.getPassword());
 			userUpdated = userService.save(userFromDB);
 		} catch (DataAccessException e) {
+			LOGGER.error("Error al intentar actualizar el registro en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			response.put("msg", "Error al intentar actualizar el registro en la base de datos");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -148,6 +154,7 @@ public class UserController {
 		try {
 			userService.delete(id);
 		} catch (DataAccessException e) {
+			LOGGER.error("Error al intentar eliminar el registro de la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			response.put("msg", "Error al intentar eliminar el registro en la base de datos, el registro no existe");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -183,6 +190,7 @@ public class UserController {
 					newUserHistory.setUser(user);
 					historyService.save(newUserHistory);
 				} catch (DataAccessException e) {
+					LOGGER.error("Error al intentar guardar el registro: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 					response.put("msg", "Error al intentar guardar el registro");
 					return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
