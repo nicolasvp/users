@@ -14,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
@@ -26,8 +27,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -74,19 +76,8 @@ public class LikesControllerTest {
         like3 = new Likes(new User(), 3L, new Date());
 
         dummyLikes = Arrays.asList(like1, like2, like3);
-        setInvalidLike();
         setInvalidLikeParamsMessages();
         setEmptyLikeMessages();
-    }
-
-    /**
-     * Likes attributes with random and invalid number of characters
-     * phraseId = 21 characters
-     * user = 301 characters
-     */
-    private void setInvalidLike() {
-        //invalidLike.setPhraseId(1L);
-        //invalidLike.setUser();
     }
 
     private void setInvalidLikeParamsMessages() {
@@ -171,10 +162,11 @@ public class LikesControllerTest {
         mockMvc.perform(post("/api/likes")
                 .content(objectMapper.writeValueAsString(like1))
                 .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.like").exists())
-                .andExpect(jsonPath("$.phraseId", is(1)))
+                .andExpect(jsonPath("$.like.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.msg", is("Registro creado con éxito")));
 
@@ -197,23 +189,7 @@ public class LikesControllerTest {
                 .andExpect(jsonPath("$.errors", hasItem("El campo phraseId no puede estar vacío")))
                 .andExpect(jsonPath("$.errors", hasItem("El campo user no puede estar vacío")));
     }
-/*
-    @Test
-    public void create_whenLikeHasInvalidParams() throws Exception {
-        when(utilService.listErrors(any())).thenReturn(invalidParamsMessages);
 
-        mockMvc.perform(post("/api/roles")
-                .content(objectMapper.writeValueAsString(invalidLike))
-                .contentType(MediaType.APPLICATION_JSON))
-                //.andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.errors").exists())
-                .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo phraseId debe tener entre 1 y 20 caracteres")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo user debe tener entre 1 y 300 caracteres")));
-    }
-*/
     @Test
     public void create_whenDBFailsThenThrowsException() throws Exception {
         when(likesService.save(any(Likes.class))).thenThrow(new DataAccessException("..."){});
@@ -230,4 +206,126 @@ public class LikesControllerTest {
     }
 
     /* END CREATE likesController method tests */
+
+    /* BEGIN UPDATE likesController method tests */
+
+    @Test
+    public void update_withProperLikeAndId() throws Exception {
+        when(likesService.findById(anyLong())).thenReturn(like1);
+        when(likesService.save(any(Likes.class))).thenReturn(like1);
+
+        mockMvc.perform(put("/api/likes/{id}", 1)
+                .content(objectMapper.writeValueAsString(like1))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.like").exists())
+                .andExpect(jsonPath("$.like.phraseId", is(1)))
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.msg", is("Registro actualizado con éxito")));
+
+        verify(likesService, times(1)).findById(anyLong());
+        verify(likesService, times(1)).save(any(Likes.class));
+        verifyNoMoreInteractions(likesService);
+    }
+
+    @Test
+    public void update_whenLikeIsProper_andInvalidId() throws Exception {
+        mockMvc.perform(put("/api/likes/{id}", "randomString")
+                .content(objectMapper.writeValueAsString(like1))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void update_whenLikeIsEmpty_AndProperId() throws Exception {
+        when(utilService.listErrors(any())).thenReturn(emptyLikeMessages);
+
+        mockMvc.perform(put("/api/likes/{id}", 1)
+                .content(objectMapper.writeValueAsString(new User()))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasSize(2)))
+                .andExpect(jsonPath("$.errors", hasItem("El campo phraseId no puede estar vacío")))
+                .andExpect(jsonPath("$.errors", hasItem("El campo user no puede estar vacío")));
+    }
+
+    @Test
+    public void update_whenLikeIsNotFound() throws Exception {
+        when(likesService.findById(anyLong())).thenReturn(null);
+
+        mockMvc.perform(put("/api/likes/{id}", anyLong())
+                .content(objectMapper.writeValueAsString(like1))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.msg", is("El registro no existe en la base de datos")));
+
+        verify(likesService, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(likesService);
+    }
+
+    @Test
+    public void update_whenDBFailsThenThrowsException() throws Exception {
+        when(likesService.save(any(Likes.class))).thenThrow(new DataAccessException("..."){});
+        when(likesService.findById(anyLong())).thenReturn(like1);
+
+        mockMvc.perform(put("/api/likes/{id}", 1)
+                .content(objectMapper.writeValueAsString(like1))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg", is("Error al intentar actualizar el registro en la base de datos")))
+                .andExpect(status().isInternalServerError());
+
+        verify(likesService, times(1)).save(any(Likes.class));
+        verify(likesService, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(likesService);
+    }
+
+    /* END UPDATE likesController method tests */
+
+    /* BEGIN DELETE likesController method tests */
+
+    @Test
+    public void delete_withProperId() throws Exception {
+        doNothing().when(likesService).delete(anyLong());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/likes/{id}", 1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.msg", is("Registro eliminado con éxito")));
+
+        verify(likesService, times(1)).delete(anyLong());
+        verifyNoMoreInteractions(likesService);
+    }
+
+    @Test
+    public void delete_withInvalidId() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/likes/{id}", "randomString"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void delete_whenUserIsNotFoundThenThrowException() throws Exception {
+        doThrow(new DataAccessException("..."){}).when(likesService).delete(anyLong());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/likes/{id}", anyLong())
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg", is("Error al intentar eliminar el registro de la base de datos")))
+                .andExpect(status().isInternalServerError());
+
+        verify(likesService, times(1)).delete(anyLong());
+        verifyNoMoreInteractions(likesService);
+    }
+
+    /* END DELETE likesController method tests */
 }

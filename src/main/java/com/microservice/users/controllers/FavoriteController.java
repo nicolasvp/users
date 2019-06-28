@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,12 +38,12 @@ public class FavoriteController {
 	@Autowired
 	private IUtilService utilService;
 
-	@GetMapping("/favorities")
+	@GetMapping(path="/favorities", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<Favorite> index(){
 		return favoriteService.findAll();
 	}
 	
-	@GetMapping("/favorities/{id}")
+	@GetMapping(path="/favorities/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		
 		Favorite favorite = null;
@@ -53,7 +54,7 @@ public class FavoriteController {
 		} catch (DataAccessException e) {
 			LOGGER.error("Error al realizar la consulta en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			response.put("msg", "Error al realizar la consulta en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		// return error if the record non exist
@@ -66,7 +67,7 @@ public class FavoriteController {
 		return new ResponseEntity<Favorite>(favorite, HttpStatus.OK);
 	}
 	
-	@PostMapping("/favorities")
+	@PostMapping(path="/favorities", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> create(@Valid @RequestBody Favorite favorite, BindingResult result) {
 		
 		Favorite newFavorite = null;
@@ -92,7 +93,7 @@ public class FavoriteController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 	
-	@PutMapping("/favorities/{id}")
+	@PutMapping(path="/favorities/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> update(@Valid @RequestBody Favorite favorite, BindingResult result, @PathVariable("id") Long id) {
 		
 		Favorite favoriteFromDB = favoriteService.findById(id);
@@ -128,7 +129,7 @@ public class FavoriteController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/favorities/{id}")
+	@DeleteMapping(path="/favorities/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> delete(@PathVariable("id") Long id) {
 		
 		Map<String, Object> response = new HashMap<>();

@@ -155,7 +155,7 @@ public class UserController {
 			userService.delete(id);
 		} catch (DataAccessException e) {
 			LOGGER.error("Error al intentar eliminar el registro de la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al intentar eliminar el registro en la base de datos, el registro no existe");
+			response.put("msg", "Error al intentar eliminar el registro de la base de datos");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 

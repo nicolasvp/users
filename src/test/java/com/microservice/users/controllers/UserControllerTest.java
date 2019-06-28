@@ -282,8 +282,8 @@ public class UserControllerTest {
 
     /* END CREATE userController method tests */
 
-
     /* BEGIN UPDATE userController method tests */
+
     @Test
     public void update_withProperUserAndId() throws Exception {
         when(userService.findById(anyLong())).thenReturn(user1);
@@ -320,7 +320,7 @@ public class UserControllerTest {
         mockMvc.perform(put("/api/users/{id}", 1)
                 .content(objectMapper.writeValueAsString(new User()))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
+                //.andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
@@ -386,7 +386,6 @@ public class UserControllerTest {
 
     /* END UPDATE userController method tests */
 
-
     /* BEGIN DELETE userController method tests */
 
     @Test
@@ -417,7 +416,7 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar eliminar el registro en la base de datos, el registro no existe")))
+                .andExpect(jsonPath("$.msg", is("Error al intentar eliminar el registro de la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(userService, times(1)).delete(anyLong());
@@ -425,7 +424,6 @@ public class UserControllerTest {
     }
 
     /* END DELETE userController method tests */
-
 
     /* BEGIN SET PHRASES userController method tests */
 
@@ -453,7 +451,7 @@ public class UserControllerTest {
 
         mockMvc.perform(get("/api/users/set-phrases-to-users")
                 .contentType("application/json"))
-                .andDo(print())
+                //.andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.msg").exists())

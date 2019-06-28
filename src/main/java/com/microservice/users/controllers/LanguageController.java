@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,12 +39,12 @@ public class LanguageController {
 	@Autowired
 	private IUtilService utilService;
 
-	@GetMapping("/languages")
+	@GetMapping(path="/languages", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<Language> index(){
 		return languageService.findAll();
 	}
 	
-	@GetMapping("/languages/{id}")
+	@GetMapping(path="/languages/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		
 		Language language = null;
@@ -54,7 +55,7 @@ public class LanguageController {
 		} catch (DataAccessException e) {
 			LOGGER.error("Error al realizar la consulta en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			response.put("msg", "Error al realizar la consulta en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		// return error if the record non exist
@@ -67,7 +68,7 @@ public class LanguageController {
 		return new ResponseEntity<Language>(language, HttpStatus.OK);
 	}
 	
-	@PostMapping("/languages")
+	@PostMapping(path="/languages", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> create(@Valid @RequestBody Language language, BindingResult result) {
 		
 		Language newLanguage = null;
@@ -93,7 +94,7 @@ public class LanguageController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 	
-	@PutMapping("/languages/{id}")
+	@PutMapping(path="/languages/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> update(@Valid @RequestBody Language language, BindingResult result, @PathVariable("id") Long id) {
 		
 		Language languageFromDB = languageService.findById(id);
@@ -128,7 +129,7 @@ public class LanguageController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/languages/{id}")
+	@DeleteMapping(path="/languages/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> delete(@PathVariable("id") Long id) {
 		
 		Map<String, Object> response = new HashMap<>();

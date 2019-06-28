@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,12 +38,12 @@ public class ConfigController {
 	@Autowired
 	private IUtilService utilService;
 
-	@GetMapping("/config")
+	@GetMapping(path="/config", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<Config> index(){
 		return configService.findAll();
 	}
 	
-	@GetMapping("/config/{id}")
+	@GetMapping(path="/config/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> show(@PathVariable Long id) {
 		
 		Config config = null;
@@ -53,7 +54,7 @@ public class ConfigController {
 		} catch (DataAccessException e) {
 			LOGGER.error("Error al realizar la consulta en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
 			response.put("msg", "Error al realizar la consulta en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		// return error if the record non exist
@@ -66,7 +67,7 @@ public class ConfigController {
 		return new ResponseEntity<Config>(config, HttpStatus.OK);
 	}
 	
-	@PostMapping("/config")
+	@PostMapping(path="/config", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> create(@Valid @RequestBody Config config, BindingResult result) {
 		
 		Config newConfig = null;
@@ -92,7 +93,7 @@ public class ConfigController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 	
-	@PutMapping("/config/{id}")
+	@PutMapping(path="/config/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> update(@Valid @RequestBody Config config, BindingResult result, @PathVariable("id") Long id) {
 		
 		Config configFromDB = configService.findById(id);
@@ -128,7 +129,7 @@ public class ConfigController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 	
-	@DeleteMapping("/config/{id}")
+	@DeleteMapping(path="/config/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> delete(@PathVariable("id") Long id) {
 		
 		Map<String, Object> response = new HashMap<>();

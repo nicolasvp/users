@@ -12,6 +12,9 @@ import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -27,6 +30,8 @@ public class Language implements Serializable {
 	private Long id;
 	
 	@Column(unique=true)
+	@Size(min=1, max=20, message="debe tener entre 1 y 20 caracteres")
+	@NotEmpty(message="no puede estar vacío")
 	private String name;
 	
 	@OneToOne(fetch=FetchType.LAZY)
