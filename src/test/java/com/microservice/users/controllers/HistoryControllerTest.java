@@ -1,10 +1,9 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.users.models.entity.Likes;
-import com.microservice.users.models.entity.Rol;
+import com.microservice.users.models.entity.History;
 import com.microservice.users.models.entity.User;
-import com.microservice.users.models.services.ILikesService;
+import com.microservice.users.models.services.IHistoryService;
 import com.microservice.users.models.services.IUtilService;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,11 +28,10 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class LikesControllerTest {
+public class HistoryControllerTest {
 
     // Simulate HTTP requests
     private MockMvc mockMvc;
@@ -42,142 +40,143 @@ public class LikesControllerTest {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
-    private ILikesService likesService;
+    private IHistoryService historyService;
 
     @Mock
     private IUtilService utilService;
 
     @InjectMocks
-    private LikesController likesController;
+    private HistoryController historyController;
 
-    private List<Likes> dummyLikes;
-
-    private Likes like1;
-    private Likes like2;
-    private Likes like3;
+    private List<History> dummyHistories;
 
     private List<String> invalidParamsMessages = new ArrayList<>();
-    private List<String> emptyLikeMessages = new ArrayList<>();
+    private List<String> emptyHistoryMessages = new ArrayList<>();
+
+    private History history1;
+    private History history2;
+    private History history3;
+
+    private void createDummyHistories(){
+        history1 = new History(new User(), 1L, new Date());
+        history2 = new History(new User(), 2L, new Date());
+        history3 = new History(new User(), 3L, new Date());
+
+        dummyHistories = Arrays.asList(history1, history2, history3);
+    }
+
+    private void setInvalidHistoryParamsMessages() {
+        invalidParamsMessages.add("El campo user debe tener entre 1 y 20 caracteres");
+    }
+
+    private void setEmptyHistoryMessages() {
+        emptyHistoryMessages.add("El campo user no puede estar vacío");
+        emptyHistoryMessages.add("El campo phraseId no puede estar vacío");
+    }
+
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders
-                .standaloneSetup(likesController)
+                .standaloneSetup(historyController)
                 .build();
 
-        createDummyLikes();
-        setInvalidLikeParamsMessages();
-        setEmptyLikeMessages();
-    }
-
-    private void createDummyLikes(){
-        like1 = new Likes(new User(), 1L, new Date());
-        like2 = new Likes(new User(), 2L, new Date());
-        like3 = new Likes(new User(), 3L, new Date());
-
-        dummyLikes = Arrays.asList(like1, like2, like3);
-    }
-
-    private void setInvalidLikeParamsMessages() {
-        invalidParamsMessages.add("El campo user debe tener entre 1 y 20 caracteres");
-    }
-
-    private void setEmptyLikeMessages() {
-        emptyLikeMessages.add("El campo user no puede estar vacío");
-        emptyLikeMessages.add("El campo phraseId no puede estar vacío");
+        createDummyHistories();
+        setInvalidHistoryParamsMessages();
+        setEmptyHistoryMessages();
     }
 
     @Test
     public void index() throws Exception {
-        when(likesService.findAll()).thenReturn(dummyLikes);
+        when(historyService.findAll()).thenReturn(dummyHistories);
 
-        mockMvc.perform(get("/api/likes")
+        mockMvc.perform(get("/api/histories")
                 .contentType("application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$.[0].phraseId", is(1)));
 
-        verify(likesService, times(1)).findAll();
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).findAll();
+        verifyNoMoreInteractions(historyService);
     }
 
-    /* BEGIN SHOW likesController method tests */
+    /* BEGIN SHOW historyController method tests */
 
     @Test
     public void show_withProperId() throws Exception {
-        when(likesService.findById(1L)).thenReturn(like1);
+        when(historyService.findById(1L)).thenReturn(history1);
 
-        mockMvc.perform(get("/api/likes/{id}", 1))
+        mockMvc.perform(get("/api/histories/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.phraseId", is(1)));
 
-        verify(likesService, times(1)).findById(1L);
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).findById(1L);
+        verifyNoMoreInteractions(historyService);
     }
 
     @Test
     public void show_whenIdIsInvalid() throws Exception {
-        mockMvc.perform(get("/api/likes/{id}", "randomString"))
+        mockMvc.perform(get("/api/histories/{id}", "randomString"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void show_whenRecordDoesnotExist() throws Exception {
-        when(likesService.findById(999999L)).thenReturn(null);
-        mockMvc.perform(get("/api/likes/{id}", 999999))
+        when(historyService.findById(999999L)).thenReturn(null);
+        mockMvc.perform(get("/api/histories/{id}", 999999))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.msg", is("El registro con ID: 999999 no existe en la base de datos")))
                 .andExpect(status().isNotFound());
 
-        verify(likesService, times(1)).findById(999999L);
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).findById(999999L);
+        verifyNoMoreInteractions(historyService);
     }
 
     @Test
     public void show_whenDBFailsThenThrowsException() throws Exception {
-        when(likesService.findById(1L)).thenThrow(new DataAccessException("..."){});
+        when(historyService.findById(1L)).thenThrow(new DataAccessException("..."){});
 
-        mockMvc.perform(get("/api/likes/{id}", 1))
+        mockMvc.perform(get("/api/histories/{id}", 1))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.msg", is("Error al realizar la consulta en la base de datos")))
                 .andExpect(status().isInternalServerError());
 
-        verify(likesService, times(1)).findById(1L);
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).findById(1L);
+        verifyNoMoreInteractions(historyService);
     }
 
-    /* END SHOW likesController method tests */
+    /* END SHOW historyController method tests */
 
-    /* BEGIN CREATE likesController method tests */
+    /* BEGIN CREATE historyController method tests */
 
     @Test
-    public void create_withProperLike() throws Exception {
-        when(likesService.save(any(Likes.class))).thenReturn(like1);
+    public void create_withProperHistory() throws Exception {
+        when(historyService.save(any(History.class))).thenReturn(history1);
 
-        mockMvc.perform(post("/api/likes")
-                .content(objectMapper.writeValueAsString(like1))
+        mockMvc.perform(post("/api/histories")
+                .content(objectMapper.writeValueAsString(history1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.like").exists())
-                .andExpect(jsonPath("$.like.phraseId", is(1)))
+                .andExpect(jsonPath("$.history").exists())
+                .andExpect(jsonPath("$.history.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.msg", is("Registro creado con éxito")));
 
-        verify(likesService, times(1)).save(any(Likes.class));
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).save(any(History.class));
+        verifyNoMoreInteractions(historyService);
     }
 
     @Test
-    public void create_whenLikeIsEmpty() throws Exception {
-        when(utilService.listErrors(any())).thenReturn(emptyLikeMessages);
+    public void create_whenHistoryIsEmpty() throws Exception {
+        when(utilService.listErrors(any())).thenReturn(emptyHistoryMessages);
 
-        mockMvc.perform(post("/api/likes")
-                .content(objectMapper.writeValueAsString(new Rol()))
+        mockMvc.perform(post("/api/histories")
+                .content(objectMapper.writeValueAsString(new History()))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
                 .andExpect(status().isBadRequest())
@@ -190,56 +189,56 @@ public class LikesControllerTest {
 
     @Test
     public void create_whenDBFailsThenThrowsException() throws Exception {
-        when(likesService.save(any(Likes.class))).thenThrow(new DataAccessException("..."){});
+        when(historyService.save(any(History.class))).thenThrow(new DataAccessException("..."){});
 
-        mockMvc.perform(post("/api/likes")
-                .content(objectMapper.writeValueAsString(like1))
+        mockMvc.perform(post("/api/histories")
+                .content(objectMapper.writeValueAsString(history1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.msg", is("Error al intentar guardar el registro")));
 
-        verify(likesService, times(1)).save(any(Likes.class));
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).save(any(History.class));
+        verifyNoMoreInteractions(historyService);
     }
 
-    /* END CREATE likesController method tests */
+    /* END CREATE historyController method tests */
 
-    /* BEGIN UPDATE likesController method tests */
+    /* BEGIN UPDATE historyController method tests */
 
     @Test
-    public void update_withProperLikeAndId() throws Exception {
-        when(likesService.findById(anyLong())).thenReturn(like1);
-        when(likesService.save(any(Likes.class))).thenReturn(like1);
+    public void update_withProperHistoryAndId() throws Exception {
+        when(historyService.findById(anyLong())).thenReturn(history1);
+        when(historyService.save(any(History.class))).thenReturn(history1);
 
-        mockMvc.perform(put("/api/likes/{id}", 1)
-                .content(objectMapper.writeValueAsString(like1))
+        mockMvc.perform(put("/api/histories/{id}", 1)
+                .content(objectMapper.writeValueAsString(history1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.like").exists())
-                .andExpect(jsonPath("$.like.phraseId", is(1)))
+                .andExpect(jsonPath("$.history").exists())
+                .andExpect(jsonPath("$.history.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.msg", is("Registro actualizado con éxito")));
 
-        verify(likesService, times(1)).findById(anyLong());
-        verify(likesService, times(1)).save(any(Likes.class));
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).findById(anyLong());
+        verify(historyService, times(1)).save(any(History.class));
+        verifyNoMoreInteractions(historyService);
     }
 
     @Test
-    public void update_whenLikeIsProper_andInvalidId() throws Exception {
-        mockMvc.perform(put("/api/likes/{id}", "randomString")
-                .content(objectMapper.writeValueAsString(like1))
+    public void update_whenHistoryIsProper_andInvalidId() throws Exception {
+        mockMvc.perform(put("/api/histories/{id}", "randomString")
+                .content(objectMapper.writeValueAsString(history1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void update_whenLikeIsEmpty_AndProperId() throws Exception {
-        when(utilService.listErrors(any())).thenReturn(emptyLikeMessages);
+    public void update_whenHistoryIsEmpty_AndProperId() throws Exception {
+        when(utilService.listErrors(any())).thenReturn(emptyHistoryMessages);
 
-        mockMvc.perform(put("/api/likes/{id}", 1)
+        mockMvc.perform(put("/api/histories/{id}", 1)
                 .content(objectMapper.writeValueAsString(new User()))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -252,11 +251,11 @@ public class LikesControllerTest {
     }
 
     @Test
-    public void update_whenLikeIsNotFound() throws Exception {
-        when(likesService.findById(anyLong())).thenReturn(null);
+    public void update_whenHistoryIsNotFound() throws Exception {
+        when(historyService.findById(anyLong())).thenReturn(null);
 
-        mockMvc.perform(put("/api/likes/{id}", anyLong())
-                .content(objectMapper.writeValueAsString(like1))
+        mockMvc.perform(put("/api/histories/{id}", anyLong())
+                .content(objectMapper.writeValueAsString(history1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
                 .andExpect(status().isNotFound())
@@ -264,66 +263,66 @@ public class LikesControllerTest {
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.msg", is("El registro no existe en la base de datos")));
 
-        verify(likesService, times(1)).findById(anyLong());
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(historyService);
     }
 
     @Test
     public void update_whenDBFailsThenThrowsException() throws Exception {
-        when(likesService.save(any(Likes.class))).thenThrow(new DataAccessException("..."){});
-        when(likesService.findById(anyLong())).thenReturn(like1);
+        when(historyService.save(any(History.class))).thenThrow(new DataAccessException("..."){});
+        when(historyService.findById(anyLong())).thenReturn(history1);
 
-        mockMvc.perform(put("/api/likes/{id}", 1)
-                .content(objectMapper.writeValueAsString(like1))
+        mockMvc.perform(put("/api/histories/{id}", 1)
+                .content(objectMapper.writeValueAsString(history1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.msg", is("Error al intentar actualizar el registro en la base de datos")))
                 .andExpect(status().isInternalServerError());
 
-        verify(likesService, times(1)).save(any(Likes.class));
-        verify(likesService, times(1)).findById(anyLong());
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).save(any(History.class));
+        verify(historyService, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(historyService);
     }
 
-    /* END UPDATE likesController method tests */
+    /* END UPDATE historyController method tests */
 
-    /* BEGIN DELETE likesController method tests */
+    /* BEGIN DELETE historyController method tests */
 
     @Test
     public void delete_withProperId() throws Exception {
-        doNothing().when(likesService).delete(anyLong());
+        doNothing().when(historyService).delete(anyLong());
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/likes/{id}", 1))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/histories/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.msg", is("Registro eliminado con éxito")));
 
-        verify(likesService, times(1)).delete(anyLong());
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).delete(anyLong());
+        verifyNoMoreInteractions(historyService);
     }
 
     @Test
     public void delete_withInvalidId() throws Exception {
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/likes/{id}", "randomString"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/histories/{id}", "randomString"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void delete_whenUserIsNotFoundThenThrowException() throws Exception {
-        doThrow(new DataAccessException("..."){}).when(likesService).delete(anyLong());
+        doThrow(new DataAccessException("..."){}).when(historyService).delete(anyLong());
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/likes/{id}", anyLong())
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/histories/{id}", anyLong())
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.msg", is("Error al intentar eliminar el registro de la base de datos")))
                 .andExpect(status().isInternalServerError());
 
-        verify(likesService, times(1)).delete(anyLong());
-        verifyNoMoreInteractions(likesService);
+        verify(historyService, times(1)).delete(anyLong());
+        verifyNoMoreInteractions(historyService);
     }
 
-    /* END DELETE likesController method tests */
+    /* END DELETE historyController method tests */
 }

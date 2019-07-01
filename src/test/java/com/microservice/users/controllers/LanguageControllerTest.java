@@ -3,6 +3,7 @@ package com.microservice.users.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microservice.users.models.entity.Config;
 import com.microservice.users.models.entity.Language;
+import com.microservice.users.models.entity.Rol;
 import com.microservice.users.models.services.ILanguageService;
 import com.microservice.users.models.services.IUtilService;
 import org.junit.Before;
@@ -13,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
@@ -25,8 +27,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -223,4 +225,140 @@ public class LanguageControllerTest {
     }
 
     /* END CREATE rolController method tests */
+
+    /* BEGIN UPDATE languageController method tests */
+
+    @Test
+    public void update_withProperLanguageAndId() throws Exception {
+        when(languageService.findById(anyLong())).thenReturn(language1);
+        when(languageService.save(any(Language.class))).thenReturn(language1);
+
+        mockMvc.perform(put("/api/languages/{id}", 1)
+                .content(objectMapper.writeValueAsString(language1))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.language").exists())
+                .andExpect(jsonPath("$.language.name", is("Language1")))
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.msg", is("Registro actualizado con éxito")));
+
+        verify(languageService, times(1)).findById(anyLong());
+        verify(languageService, times(1)).save(any(Language.class));
+        verifyNoMoreInteractions(languageService);
+    }
+
+    @Test
+    public void update_whenLanguageIsProper_andInvalidId() throws Exception {
+        mockMvc.perform(put("/api/languages/{id}", "randomString")
+                .content(objectMapper.writeValueAsString(language1))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void update_whenLanguageIsEmpty_AndProperId() throws Exception {
+        when(utilService.listErrors(any())).thenReturn(emptyLanguageMessages);
+
+        mockMvc.perform(put("/api/languages/{id}", 1)
+                .content(objectMapper.writeValueAsString(new Rol()))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors", hasItem("El campo name no puede estar vacío")));
+    }
+
+    @Test
+    public void update_whenLanguageIsInvalid_AndProperId() throws Exception {
+        when(utilService.listErrors(any())).thenReturn(invalidParamsMessages);
+
+        mockMvc.perform(put("/api/languages/{id}", 1)
+                .content(objectMapper.writeValueAsString(invalidLanguage))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors", hasItem("El campo name debe tener entre 1 y 20 caracteres")));
+    }
+
+    @Test
+    public void update_whenLanguageIsNotFound() throws Exception {
+        when(languageService.findById(anyLong())).thenReturn(null);
+
+        mockMvc.perform(put("/api/languages/{id}", anyLong())
+                .content(objectMapper.writeValueAsString(language1))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.msg", is("El registro no existe en la base de datos")));
+
+        verify(languageService, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(languageService);
+    }
+
+    @Test
+    public void update_whenDBFailsThenThrowsException() throws Exception {
+        when(languageService.save(any(Language.class))).thenThrow(new DataAccessException("..."){});
+        when(languageService.findById(anyLong())).thenReturn(language1);
+
+        mockMvc.perform(put("/api/languages/{id}", 1)
+                .content(objectMapper.writeValueAsString(language1))
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg", is("Error al intentar actualizar el registro en la base de datos")))
+                .andExpect(status().isInternalServerError());
+
+        verify(languageService, times(1)).save(any(Language.class));
+        verify(languageService, times(1)).findById(anyLong());
+        verifyNoMoreInteractions(languageService);
+    }
+
+    /* END UPDATE languageController method tests */
+
+    /* BEGIN DELETE languageController method tests */
+
+    @Test
+    public void delete_withProperId() throws Exception {
+        doNothing().when(languageService).delete(anyLong());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/languages/{id}", 1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.msg").exists())
+                .andExpect(jsonPath("$.msg", is("Registro eliminado con éxito")));
+
+        verify(languageService, times(1)).delete(anyLong());
+        verifyNoMoreInteractions(languageService);
+    }
+
+    @Test
+    public void delete_withInvalidId() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/languages/{id}", "randomString"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void delete_whenRolIsNotFoundThenThrowException() throws Exception {
+        doThrow(new DataAccessException("..."){}).when(languageService).delete(anyLong());
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/languages/{id}", anyLong())
+                .contentType(MediaType.APPLICATION_JSON))
+                //.andDo(print())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.msg", is("Error al intentar eliminar el registro de la base de datos")))
+                .andExpect(status().isInternalServerError());
+
+        verify(languageService, times(1)).delete(anyLong());
+        verifyNoMoreInteractions(languageService);
+    }
+
+    /* END DELETE languageController method tests */
 }
