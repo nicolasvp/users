@@ -6,12 +6,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
-@EnableAutoConfiguration //defines this as a Spring Boot application
-@EnableDiscoveryClient 
+@EnableEurekaClient // No es realmente necesario, ya que con tener la dependencia en el pom.xml se autoregistra automaticamente
 @EnableCircuitBreaker
 @EnableFeignClients
 @SpringBootApplication
