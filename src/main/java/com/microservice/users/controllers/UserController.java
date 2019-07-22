@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -28,6 +27,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.microservice.users.enums.DatabaseMessagesEnum;
+import com.microservice.users.exceptions.DatabaseAccessException;
+import com.microservice.users.exceptions.NullRecordException;
 import com.microservice.users.models.entity.History;
 import com.microservice.users.models.entity.User;
 import com.microservice.users.models.services.IHistoryService;
@@ -60,30 +62,25 @@ public class UserController {
 	}
 	
 	@GetMapping(path="/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> show(@PathVariable Long id) {
+	public ResponseEntity<?> show(@PathVariable Long id) throws NullRecordException, DatabaseAccessException {
 		
 		User user = null;
-		Map<String, Object> response = new HashMap<>();
 
 		try {
 			user = userService.findById(id);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al realizar la consulta en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al realizar la consulta en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.ACCESS_DATABASE.getMessage(), e);
 		}
 
 		if (user == null) {
-			LOGGER.warn("El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
-			response.put("msg", "El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			throw new NullRecordException();
 		}
 
 		return new ResponseEntity<User>(user, HttpStatus.OK);
 	}
 	
 	@PostMapping(path="/users", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult result) {
+	public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult result) throws DatabaseAccessException {
 		
 		User newUser = null;
 		Map<String, Object> response = new HashMap<>();
@@ -97,9 +94,7 @@ public class UserController {
 		try {
 			newUser = userService.save(user);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al intentar guardar el registro: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al intentar guardar el registro");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.STORE_RECORD.getMessage(), e);
 		}
 
 		response.put("msg", "Registro creado con éxito");
@@ -109,7 +104,7 @@ public class UserController {
 	}
 	
 	@PutMapping(path="/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> update(@Valid @RequestBody User user, BindingResult result, @PathVariable("id") Long id) {
+	public ResponseEntity<?> update(@Valid @RequestBody User user, BindingResult result, @PathVariable("id") Long id) throws NullRecordException, DatabaseAccessException {
 		
 		User userFromDB = userService.findById(id);
 		User userUpdated = null;
@@ -123,9 +118,7 @@ public class UserController {
 		
 		// return error if the record non exist
 		if (userFromDB == null) {
-			LOGGER.warn("El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
-			response.put("msg", "El registro no existe en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			throw new NullRecordException();
 		}
 
 		try {
@@ -135,9 +128,7 @@ public class UserController {
 			userFromDB.setPassword(user.getPassword());
 			userUpdated = userService.save(userFromDB);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al intentar actualizar el registro en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al intentar actualizar el registro en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.UPDATE_RECORD.getMessage(), e);
 		}
 
 		response.put("msg", "Registro actualizado con éxito");
@@ -147,16 +138,14 @@ public class UserController {
 	}
 	
 	@DeleteMapping(path="/users/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+	public ResponseEntity<?> delete(@PathVariable("id") Long id) throws DatabaseAccessException {
 		
 		Map<String, Object> response = new HashMap<>();
 
 		try {
 			userService.delete(id);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al intentar eliminar el registro de la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al intentar eliminar el registro de la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.DELETE_RECORD.getMessage(), e);
 		}
 
 		response.put("msg", "Registro eliminado con éxito");
@@ -168,7 +157,7 @@ public class UserController {
 	 * Pick a random phrase for every user based on his config phrase type and assigned to his history
 	 */
 	@GetMapping(path="/users/set-phrases-to-users", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> setPhrasesToUsers() throws NoSuchAlgorithmException {
+	public ResponseEntity<?> setPhrasesToUsers() throws NoSuchAlgorithmException, DatabaseAccessException {
 		Map<String, Object> response = new HashMap<>();
 		List<User> allUsers = userService.findAll();
 		List<Phrase> allPhrases = userService.getAllPhrases();
@@ -190,9 +179,7 @@ public class UserController {
 					newUserHistory.setUser(user);
 					historyService.save(newUserHistory);
 				} catch (DataAccessException e) {
-					LOGGER.error("Error al intentar guardar el registro: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-					response.put("msg", "Error al intentar guardar el registro");
-					return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+					throw new DatabaseAccessException(DatabaseMessagesEnum.DELETE_RECORD.getMessage(), e);
 				}
 
 				phrasesAsignedToUsers.put(user.getName(), randomPhraseSelected.getBody());

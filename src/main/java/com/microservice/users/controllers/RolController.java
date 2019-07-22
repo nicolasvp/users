@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.microservice.users.enums.DatabaseMessagesEnum;
+import com.microservice.users.exceptions.DatabaseAccessException;
+import com.microservice.users.exceptions.NullRecordException;
 import com.microservice.users.models.entity.Rol;
 import com.microservice.users.models.services.IRolService;
 
@@ -44,30 +47,25 @@ public class RolController {
 	}
 	
 	@GetMapping(path="/roles/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> show(@PathVariable Long id) {
+	public ResponseEntity<?> show(@PathVariable Long id) throws NullRecordException, DatabaseAccessException {
 
 		Rol rol = null;
-		Map<String, Object> response = new HashMap<>();
 
 		try {
 			rol = rolService.findById(id);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al realizar la consulta en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al realizar la consulta en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.ACCESS_DATABASE.getMessage(), e);
 		}
 
 		if (rol == null) {
-			LOGGER.warn("El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
-			response.put("msg", "El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			throw new NullRecordException();
 		}
 
 		return new ResponseEntity<Rol>(rol, HttpStatus.OK);
 	}
 	
 	@PostMapping(path="/roles", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> create(@Valid @RequestBody Rol rol, BindingResult result) {
+	public ResponseEntity<?> create(@Valid @RequestBody Rol rol, BindingResult result) throws DatabaseAccessException {
 		
 		Rol newRol = null;
 		Map<String, Object> response = new HashMap<>();
@@ -81,9 +79,7 @@ public class RolController {
 		try {
 			newRol = rolService.save(rol);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al intentar guardar el registro: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al intentar guardar el registro");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.STORE_RECORD.getMessage(), e);
 		}
 
 		response.put("msg", "Registro creado con éxito");
@@ -93,7 +89,7 @@ public class RolController {
 	}
 	
 	@PutMapping(path="/roles/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> update(@Valid @RequestBody Rol rol, BindingResult result, @PathVariable("id") Long id) {
+	public ResponseEntity<?> update(@Valid @RequestBody Rol rol, BindingResult result, @PathVariable("id") Long id) throws NullRecordException, DatabaseAccessException {
 		
 		Rol rolFromDB = rolService.findById(id);
 		Rol rolUpdated = null;
@@ -107,9 +103,7 @@ public class RolController {
 		
 		// return error if the record non exist
 		if (rolFromDB == null) {
-			LOGGER.warn("El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
-			response.put("msg", "El registro no existe en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			throw new NullRecordException();
 		}
 
 		try {
@@ -117,9 +111,7 @@ public class RolController {
 			rolFromDB.setDescription(rol.getDescription());
 			rolUpdated = rolService.save(rolFromDB);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al intentar actualizar el registro en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al intentar actualizar el registro en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.UPDATE_RECORD.getMessage(), e);
 		}
 
 		response.put("msg", "Registro actualizado con éxito");
@@ -129,16 +121,14 @@ public class RolController {
 	}
 	
 	@DeleteMapping(path="/roles/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+	public ResponseEntity<?> delete(@PathVariable("id") Long id) throws DatabaseAccessException {
 		
 		Map<String, Object> response = new HashMap<>();
 
 		try {
 			rolService.delete(id);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al intentar eliminar el registro de la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al intentar eliminar el registro de la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.DELETE_RECORD.getMessage(), e);
 		}
 
 		response.put("msg", "Registro eliminado con éxito");

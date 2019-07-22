@@ -126,13 +126,11 @@ public class LikesControllerTest {
 
     @Test
     public void show_whenRecordDoesnotExist() throws Exception {
-        when(likesService.findById(999999L)).thenReturn(null);
-        mockMvc.perform(get("/api/likes/{id}", 999999))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("El registro con ID: 999999 no existe en la base de datos")))
+        when(likesService.findById(anyLong())).thenReturn(null);
+        mockMvc.perform(get("/api/likes/{id}", anyLong()))
                 .andExpect(status().isNotFound());
 
-        verify(likesService, times(1)).findById(999999L);
+        verify(likesService, times(1)).findById(anyLong());
         verifyNoMoreInteractions(likesService);
     }
 
@@ -141,8 +139,6 @@ public class LikesControllerTest {
         when(likesService.findById(1L)).thenThrow(new DataAccessException("..."){});
 
         mockMvc.perform(get("/api/likes/{id}", 1))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al realizar la consulta en la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(likesService, times(1)).findById(1L);
@@ -195,9 +191,7 @@ public class LikesControllerTest {
         mockMvc.perform(post("/api/likes")
                 .content(objectMapper.writeValueAsString(like1))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.msg", is("Error al intentar guardar el registro")));
+                .andExpect(status().isInternalServerError());
 
         verify(likesService, times(1)).save(any(Likes.class));
         verifyNoMoreInteractions(likesService);
@@ -259,10 +253,7 @@ public class LikesControllerTest {
                 .content(objectMapper.writeValueAsString(like1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("El registro no existe en la base de datos")));
+                .andExpect(status().isNotFound());
 
         verify(likesService, times(1)).findById(anyLong());
         verifyNoMoreInteractions(likesService);
@@ -277,8 +268,6 @@ public class LikesControllerTest {
                 .content(objectMapper.writeValueAsString(like1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar actualizar el registro en la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(likesService, times(1)).save(any(Likes.class));
@@ -317,8 +306,6 @@ public class LikesControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/likes/{id}", anyLong())
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar eliminar el registro de la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(likesService, times(1)).delete(anyLong());

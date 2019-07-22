@@ -1,6 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microservice.users.enums.DatabaseMessagesEnum;
 import com.microservice.users.models.entity.Config;
 import com.microservice.users.models.entity.History;
 import com.microservice.users.models.entity.Language;
@@ -183,13 +184,12 @@ public class UserControllerTest {
 
     @Test
     public void show_whenRecordDoesnotExist() throws Exception {
-        when(userService.findById(999999L)).thenReturn(null);
-        mockMvc.perform(get("/api/users/{id}", 999999))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("El registro con ID: 999999 no existe en la base de datos")))
+        when(userService.findById(anyLong())).thenReturn(null);
+        mockMvc.perform(get("/api/users/{id}", anyLong()))
+        		//.andDo(print())
                 .andExpect(status().isNotFound());
 
-        verify(userService, times(1)).findById(999999L);
+        verify(userService, times(1)).findById(anyLong());
         verifyNoMoreInteractions(userService);
     }
 
@@ -197,8 +197,6 @@ public class UserControllerTest {
     public void show_whenDBFailsThenThrowsException() throws Exception {
         when(userService.findById(1L)).thenThrow(new DataAccessException("..."){});
         mockMvc.perform(get("/api/users/{id}", 1))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al realizar la consulta en la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(userService, times(1)).findById(1L);
@@ -272,8 +270,6 @@ public class UserControllerTest {
         mockMvc.perform(post("/api/users")
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar guardar el registro")))
                 .andExpect(status().isInternalServerError());
 
         verify(userService, times(1)).save(any(User.class));
@@ -357,10 +353,7 @@ public class UserControllerTest {
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("El registro no existe en la base de datos")));
+                .andExpect(status().isNotFound());
 
         verify(userService, times(1)).findById(anyLong());
         verifyNoMoreInteractions(userService);
@@ -375,8 +368,6 @@ public class UserControllerTest {
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar actualizar el registro en la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(userService, times(1)).save(any(User.class));
@@ -415,8 +406,6 @@ public class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", anyLong())
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar eliminar el registro de la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(userService, times(1)).delete(anyLong());
@@ -452,10 +441,7 @@ public class UserControllerTest {
         mockMvc.perform(get("/api/users/set-phrases-to-users")
                 .contentType("application/json"))
                 //.andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Error al intentar guardar el registro")));
+                .andExpect(status().isInternalServerError());
     }
 
     /* END SET PHRASES userController method tests */

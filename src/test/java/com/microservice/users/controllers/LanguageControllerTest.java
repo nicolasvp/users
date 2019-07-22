@@ -134,13 +134,11 @@ public class LanguageControllerTest {
 
     @Test
     public void show_whenRecordDoesnotExist() throws Exception {
-        when(languageService.findById(999999L)).thenReturn(null);
-        mockMvc.perform(get("/api/languages/{id}", 999999))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("El registro con ID: 999999 no existe en la base de datos")))
+        when(languageService.findById(anyLong())).thenReturn(null);
+        mockMvc.perform(get("/api/languages/{id}", anyLong()))
                 .andExpect(status().isNotFound());
 
-        verify(languageService, times(1)).findById(999999L);
+        verify(languageService, times(1)).findById(anyLong());
         verifyNoMoreInteractions(languageService);
     }
 
@@ -149,8 +147,6 @@ public class LanguageControllerTest {
         when(languageService.findById(1L)).thenThrow(new DataAccessException("..."){});
 
         mockMvc.perform(get("/api/languages/{id}", 1))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al realizar la consulta en la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(languageService, times(1)).findById(1L);
@@ -216,8 +212,6 @@ public class LanguageControllerTest {
         mockMvc.perform(post("/api/languages")
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar guardar el registro")))
                 .andExpect(status().isInternalServerError());
 
         verify(languageService, times(1)).save(any(Language.class));
@@ -294,10 +288,7 @@ public class LanguageControllerTest {
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("El registro no existe en la base de datos")));
+                .andExpect(status().isNotFound());
 
         verify(languageService, times(1)).findById(anyLong());
         verifyNoMoreInteractions(languageService);
@@ -312,8 +303,6 @@ public class LanguageControllerTest {
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar actualizar el registro en la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(languageService, times(1)).save(any(Language.class));
@@ -352,8 +341,6 @@ public class LanguageControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/languages/{id}", anyLong())
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar eliminar el registro de la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(languageService, times(1)).delete(anyLong());

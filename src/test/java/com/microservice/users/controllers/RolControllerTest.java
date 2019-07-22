@@ -137,13 +137,11 @@ public class RolControllerTest {
 
     @Test
     public void show_whenRecordDoesnotExist() throws Exception {
-        when(rolService.findById(999999L)).thenReturn(null);
-        mockMvc.perform(get("/api/roles/{id}", 999999))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("El registro con ID: 999999 no existe en la base de datos")))
+        when(rolService.findById(anyLong())).thenReturn(null);
+        mockMvc.perform(get("/api/roles/{id}", anyLong()))
                 .andExpect(status().isNotFound());
 
-        verify(rolService, times(1)).findById(999999L);
+        verify(rolService, times(1)).findById(anyLong());
         verifyNoMoreInteractions(rolService);
     }
 
@@ -152,8 +150,6 @@ public class RolControllerTest {
         when(rolService.findById(1L)).thenThrow(new DataAccessException("..."){});
 
         mockMvc.perform(get("/api/roles/{id}", 1))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al realizar la consulta en la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(rolService, times(1)).findById(1L);
@@ -221,10 +217,7 @@ public class RolControllerTest {
 
         mockMvc.perform(post("/api/roles")
                 .content(objectMapper.writeValueAsString(rol1))
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar guardar el registro")))
-                .andExpect(status().isInternalServerError());
+                .contentType(MediaType.APPLICATION_JSON));
 
         verify(rolService, times(1)).save(any(Rol.class));
         verifyNoMoreInteractions(rolService);
@@ -303,10 +296,7 @@ public class RolControllerTest {
                 .content(objectMapper.writeValueAsString(rol1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("El registro no existe en la base de datos")));
+                .andExpect(status().isNotFound());
 
         verify(rolService, times(1)).findById(anyLong());
         verifyNoMoreInteractions(rolService);
@@ -321,8 +311,6 @@ public class RolControllerTest {
                 .content(objectMapper.writeValueAsString(rol1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar actualizar el registro en la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(rolService, times(1)).save(any(Rol.class));
@@ -361,8 +349,6 @@ public class RolControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/roles/{id}", anyLong())
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$.msg", is("Error al intentar eliminar el registro de la base de datos")))
                 .andExpect(status().isInternalServerError());
 
         verify(rolService, times(1)).delete(anyLong());

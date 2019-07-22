@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.microservice.users.enums.DatabaseMessagesEnum;
+import com.microservice.users.exceptions.DatabaseAccessException;
+import com.microservice.users.exceptions.NullRecordException;
 import com.microservice.users.models.entity.Likes;
 import com.microservice.users.models.services.ILikesService;
 
@@ -44,31 +47,26 @@ public class LikesController {
 	}
 	
 	@GetMapping(path="/likes/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> show(@PathVariable Long id) {
+	public ResponseEntity<?> show(@PathVariable Long id) throws NullRecordException, DatabaseAccessException {
 		
 		Likes like = null;
-		Map<String, Object> response = new HashMap<>();
 
 		try {
 			like = likesService.findById(id);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al realizar la consulta en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al realizar la consulta en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.ACCESS_DATABASE.getMessage(), e);
 		}
 
 		// return error if the record non exist
 		if (like == null) {
-			LOGGER.warn("El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
-			response.put("msg", "El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			throw new NullRecordException();
 		}
 
 		return new ResponseEntity<Likes>(like, HttpStatus.OK);
 	}
 	
 	@PostMapping(path="/likes", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> create(@Valid @RequestBody Likes like, BindingResult result) {
+	public ResponseEntity<?> create(@Valid @RequestBody Likes like, BindingResult result) throws DatabaseAccessException {
 		
 		Likes newLikes = null;
 		Map<String, Object> response = new HashMap<>();
@@ -82,9 +80,7 @@ public class LikesController {
 		try {
 			newLikes = likesService.save(like);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al intentar guardar el registro: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al intentar guardar el registro");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.STORE_RECORD.getMessage(), e);
 		}
 
 		response.put("msg", "Registro creado con éxito");
@@ -94,7 +90,7 @@ public class LikesController {
 	}
 	
 	@PutMapping(path="/likes/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> update(@Valid @RequestBody Likes like, BindingResult result, @PathVariable("id") Long id) {
+	public ResponseEntity<?> update(@Valid @RequestBody Likes like, BindingResult result, @PathVariable("id") Long id) throws NullRecordException, DatabaseAccessException {
 		
 		Likes likeFromDB = likesService.findById(id);
 		Likes likeUpdated = null;
@@ -108,9 +104,7 @@ public class LikesController {
 		
 		// return error if the record non exist
 		if (likeFromDB == null) {
-			LOGGER.warn("El registro con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
-			response.put("msg", "El registro no existe en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			throw new NullRecordException();
 		}
 
 		try {
@@ -118,9 +112,7 @@ public class LikesController {
 			likeFromDB.setPhraseId(like.getPhraseId());
 			likeUpdated = likesService.save(likeFromDB);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al intentar actualizar el registro en la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al intentar actualizar el registro en la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.UPDATE_RECORD.getMessage(), e);
 		}
 
 		response.put("msg", "Registro actualizado con éxito");
@@ -130,16 +122,14 @@ public class LikesController {
 	}
 	
 	@DeleteMapping(path="/likes/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+	public ResponseEntity<?> delete(@PathVariable("id") Long id) throws DatabaseAccessException {
 		
 		Map<String, Object> response = new HashMap<>();
 
 		try {
 			likesService.delete(id);
 		} catch (DataAccessException e) {
-			LOGGER.error("Error al intentar eliminar el registro de la base de datos: " + e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-			response.put("msg", "Error al intentar eliminar el registro de la base de datos");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			throw new DatabaseAccessException(DatabaseMessagesEnum.DELETE_RECORD.getMessage(), e);
 		}
 
 		response.put("msg", "Registro eliminado con éxito");
