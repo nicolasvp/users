@@ -1,6 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microservice.users.config.MessagesTranslate;
 import com.microservice.users.models.entity.Likes;
 import com.microservice.users.models.entity.Rol;
 import com.microservice.users.models.entity.User;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -50,6 +52,9 @@ public class LikesControllerTest {
     @InjectMocks
     private LikesController likesController;
 
+	@Autowired
+	private MessagesTranslate messages;
+	
     private List<Likes> dummyLikes;
 
     private Likes like1;
@@ -162,7 +167,7 @@ public class LikesControllerTest {
                 .andExpect(jsonPath("$.like").exists())
                 .andExpect(jsonPath("$.like.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro creado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
 
         verify(likesService, times(1)).save(any(Likes.class));
         verifyNoMoreInteractions(likesService);
@@ -214,7 +219,7 @@ public class LikesControllerTest {
                 .andExpect(jsonPath("$.like").exists())
                 .andExpect(jsonPath("$.like.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro actualizado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
 
         verify(likesService, times(1)).findById(anyLong());
         verify(likesService, times(1)).save(any(Likes.class));
@@ -286,7 +291,7 @@ public class LikesControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/likes/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro eliminado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
 
         verify(likesService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(likesService);

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.microservice.users.config.MessagesTranslate;
 import com.microservice.users.enums.DatabaseMessagesEnum;
 import com.microservice.users.exceptions.DatabaseAccessException;
 import com.microservice.users.exceptions.NullRecordException;
@@ -41,6 +42,9 @@ public class FavoriteController {
 	@Autowired
 	private IUtilService utilService;
 
+	@Autowired
+	private MessagesTranslate messages;
+	
 	@GetMapping(path="/favorities", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<Favorite> index(){
 		return favoriteService.findAll();
@@ -83,7 +87,7 @@ public class FavoriteController {
 			throw new DatabaseAccessException(DatabaseMessagesEnum.STORE_RECORD.getMessage(), e);
 		}
 
-		response.put("msg", "Registro creado con éxito");
+		response.put("msg", messages.getCreated());
 		response.put("favorite", newFavorite);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
@@ -115,7 +119,7 @@ public class FavoriteController {
 			throw new DatabaseAccessException(DatabaseMessagesEnum.UPDATE_RECORD.getMessage(), e);
 		}
 
-		response.put("msg", "Registro actualizado con éxito");
+		response.put("msg", messages.getUpdated());
 		response.put("favorite", favoriteUpdated);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
@@ -132,7 +136,7 @@ public class FavoriteController {
 			throw new DatabaseAccessException(DatabaseMessagesEnum.DELETE_RECORD.getMessage(), e);
 		}
 
-		response.put("msg", "Registro eliminado con éxito");
+		response.put("msg", messages.getDeleted());
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}

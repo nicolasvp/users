@@ -1,6 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microservice.users.config.MessagesTranslate;
 import com.microservice.users.enums.DatabaseMessagesEnum;
 import com.microservice.users.models.entity.Config;
 import com.microservice.users.models.entity.History;
@@ -18,8 +19,10 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -57,6 +60,9 @@ public class UserControllerTest {
     @InjectMocks
     private UserController userController;
 
+    @Mock
+    private MessagesTranslate messages;
+
     private List<User> dummyUsers;
     private List<Phrase> dummyPhrases;
 
@@ -84,6 +90,7 @@ public class UserControllerTest {
         setInvalidUser();
         setInvalidUserParamsMessages();
         setEmptyUserMessages();
+        //setCrudMessages();
     }
 
     private void createDummyUsers() {
@@ -142,6 +149,13 @@ public class UserControllerTest {
         emptyUserMessages.add("El campo email no puede estar vacío");
         emptyUserMessages.add("El campo lastName no puede estar vacío");
         emptyUserMessages.add("El campo password no puede estar vacío");
+    }
+
+    private void setCrudMessages() {
+        MessagesTranslate messages = new MessagesTranslate();
+        ReflectionTestUtils.setField(messages, "created", "Record succesfully created");
+        ReflectionTestUtils.setField(messages, "updated", "Record succesfully updated");
+        ReflectionTestUtils.setField(messages, "deleted", "Record succesfully deleted");
     }
 
     @Test
@@ -211,20 +225,24 @@ public class UserControllerTest {
     @Test
     public void create_withProperUser() throws Exception {
         when(userService.save(any(User.class))).thenReturn(user1);
+        when(messages.getCreated()).thenReturn("Record succesfully created");
 
         mockMvc.perform(post("/api/users")
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
+        		.andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.user").exists())
                 .andExpect(jsonPath("$.user.id", is(1)))
                 .andExpect(jsonPath("$.user.name", is("USER 1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro creado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
 
         verify(userService, times(1)).save(any(User.class));
+        verify(messages, times(2)).getCreated();
         verifyNoMoreInteractions(userService);
+        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -284,21 +302,25 @@ public class UserControllerTest {
     public void update_withProperUserAndId() throws Exception {
         when(userService.findById(anyLong())).thenReturn(user1);
         when(userService.save(any(User.class))).thenReturn(user1);
+        when(messages.getUpdated()).thenReturn("Record succesfully updated");
 
-        mockMvc.perform(put("/api/users/{id}", 1)
+        mockMvc.perform(put("/api/users/{id}", 1L)
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.user").exists())
                 .andExpect(jsonPath("$.user.id", is(1)))
                 .andExpect(jsonPath("$.user.name", is("USER 1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro actualizado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
 
         verify(userService, times(1)).findById(anyLong());
         verify(userService, times(1)).save(any(User.class));
+        verify(messages, times(2)).getUpdated();
         verifyNoMoreInteractions(userService);
+        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -382,13 +404,15 @@ public class UserControllerTest {
     @Test
     public void delete_withProperId() throws Exception {
         doNothing().when(userService).delete(anyLong());
+        when(messages.getDeleted()).thenReturn("Record succesfully deleted");
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro eliminado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
 
         verify(userService, times(1)).delete(anyLong());
+        verify(messages, times(2)).getDeleted();
         verifyNoMoreInteractions(userService);
     }
 

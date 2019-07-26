@@ -1,6 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microservice.users.config.MessagesTranslate;
 import com.microservice.users.models.entity.Rol;
 import com.microservice.users.models.services.IRolService;
 import com.microservice.users.models.services.IUtilService;
@@ -9,6 +10,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -47,6 +49,9 @@ public class RolControllerTest {
     @InjectMocks
     private RolController rolController;
 
+	@Autowired
+	private MessagesTranslate messages;
+	
     private List<Rol> dummyRoles;
     
     private List<String> invalidParamsMessages = new ArrayList<>();
@@ -173,7 +178,7 @@ public class RolControllerTest {
                 .andExpect(jsonPath("$.rol.name", is("ROL1")))
                 .andExpect(jsonPath("$.rol.description", is("TEST ROL1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro creado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
 
         verify(rolService, times(1)).save(any(Rol.class));
         verifyNoMoreInteractions(rolService);
@@ -241,7 +246,7 @@ public class RolControllerTest {
                 .andExpect(jsonPath("$.rol.name", is("ROL1")))
                 .andExpect(jsonPath("$.rol.description", is("TEST ROL1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro actualizado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
 
         verify(rolService, times(1)).findById(anyLong());
         verify(rolService, times(1)).save(any(Rol.class));
@@ -329,7 +334,7 @@ public class RolControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/roles/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro eliminado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
 
         verify(rolService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(rolService);

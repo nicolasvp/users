@@ -1,6 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microservice.users.config.MessagesTranslate;
 import com.microservice.users.models.entity.Favorite;
 import com.microservice.users.models.entity.User;
 import com.microservice.users.models.services.IFavoriteService;
@@ -10,6 +11,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -49,6 +51,9 @@ public class FavoriteControllerTest {
     @InjectMocks
     private FavoriteController favoriteController;
 
+	@Autowired
+	private MessagesTranslate messages;
+	
     private List<Favorite> dummyFavorites;
 
     private List<String> invalidParamsMessages = new ArrayList<>();
@@ -161,7 +166,7 @@ public class FavoriteControllerTest {
                 .andExpect(jsonPath("$.favorite").exists())
                 .andExpect(jsonPath("$.favorite.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro creado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
 
         verify(favoriteService, times(1)).save(any(Favorite.class));
         verifyNoMoreInteractions(favoriteService);
@@ -213,7 +218,7 @@ public class FavoriteControllerTest {
                 .andExpect(jsonPath("$.favorite").exists())
                 .andExpect(jsonPath("$.favorite.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro actualizado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
 
         verify(favoriteService, times(1)).findById(anyLong());
         verify(favoriteService, times(1)).save(any(Favorite.class));
@@ -285,7 +290,7 @@ public class FavoriteControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/favorities/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro eliminado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
 
         verify(favoriteService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(favoriteService);

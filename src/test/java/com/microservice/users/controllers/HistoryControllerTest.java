@@ -1,6 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microservice.users.config.MessagesTranslate;
 import com.microservice.users.models.entity.History;
 import com.microservice.users.models.entity.User;
 import com.microservice.users.models.services.IHistoryService;
@@ -10,6 +11,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -49,6 +51,9 @@ public class HistoryControllerTest {
     @InjectMocks
     private HistoryController historyController;
 
+	@Autowired
+	private MessagesTranslate messages;
+	
     private List<History> dummyHistories;
 
     private List<String> invalidParamsMessages = new ArrayList<>();
@@ -162,7 +167,7 @@ public class HistoryControllerTest {
                 .andExpect(jsonPath("$.history").exists())
                 .andExpect(jsonPath("$.history.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro creado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
 
         verify(historyService, times(1)).save(any(History.class));
         verifyNoMoreInteractions(historyService);
@@ -214,7 +219,7 @@ public class HistoryControllerTest {
                 .andExpect(jsonPath("$.history").exists())
                 .andExpect(jsonPath("$.history.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro actualizado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
 
         verify(historyService, times(1)).findById(anyLong());
         verify(historyService, times(1)).save(any(History.class));
@@ -286,7 +291,7 @@ public class HistoryControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/histories/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro eliminado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
 
         verify(historyService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(historyService);

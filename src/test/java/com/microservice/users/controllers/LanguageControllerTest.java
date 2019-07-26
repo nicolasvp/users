@@ -1,6 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microservice.users.config.MessagesTranslate;
 import com.microservice.users.models.entity.Config;
 import com.microservice.users.models.entity.Language;
 import com.microservice.users.models.entity.Rol;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -49,6 +51,9 @@ public class LanguageControllerTest {
     @InjectMocks
     private LanguageController languageController;
 
+	@Autowired
+	private MessagesTranslate messages;
+	
     private List<Language> dummyLanguages;
 
     private List<String> invalidParamsMessages = new ArrayList<>();
@@ -169,7 +174,7 @@ public class LanguageControllerTest {
                 .andExpect(jsonPath("$.language").exists())
                 .andExpect(jsonPath("$.language.name", is("Language1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro creado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
 
         verify(languageService, times(1)).save(any(Language.class));
         verifyNoMoreInteractions(languageService);
@@ -235,7 +240,7 @@ public class LanguageControllerTest {
                 .andExpect(jsonPath("$.language").exists())
                 .andExpect(jsonPath("$.language.name", is("Language1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro actualizado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
 
         verify(languageService, times(1)).findById(anyLong());
         verify(languageService, times(1)).save(any(Language.class));
@@ -319,9 +324,10 @@ public class LanguageControllerTest {
         doNothing().when(languageService).delete(anyLong());
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/languages/{id}", 1))
+        		.andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is("Registro eliminado con éxito")));
+                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
 
         verify(languageService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(languageService);
