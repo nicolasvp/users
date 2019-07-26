@@ -52,8 +52,12 @@ public class LikesControllerTest {
     @InjectMocks
     private LikesController likesController;
 
-	@Autowired
-	private MessagesTranslate messages;
+    @Mock
+    private MessagesTranslate messages;
+
+    private static final String CREATED_MESSAGE = "Record succesfully created";
+    private static final String UPDATED_MESSAGE = "Record succesfully updated";
+    private static final String DELETED_MESSAGE = "Record succesfully deleted";
 	
     private List<Likes> dummyLikes;
 
@@ -157,6 +161,7 @@ public class LikesControllerTest {
     @Test
     public void create_withProperLike() throws Exception {
         when(likesService.save(any(Likes.class))).thenReturn(like1);
+        when(messages.getCreated()).thenReturn(CREATED_MESSAGE);
 
         mockMvc.perform(post("/api/likes")
                 .content(objectMapper.writeValueAsString(like1))
@@ -170,7 +175,9 @@ public class LikesControllerTest {
                 .andExpect(jsonPath("$.msg", is(messages.getCreated())));
 
         verify(likesService, times(1)).save(any(Likes.class));
+        verify(messages, times(2)).getCreated();
         verifyNoMoreInteractions(likesService);
+        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -210,6 +217,7 @@ public class LikesControllerTest {
     public void update_withProperLikeAndId() throws Exception {
         when(likesService.findById(anyLong())).thenReturn(like1);
         when(likesService.save(any(Likes.class))).thenReturn(like1);
+        when(messages.getUpdated()).thenReturn(UPDATED_MESSAGE);
 
         mockMvc.perform(put("/api/likes/{id}", 1)
                 .content(objectMapper.writeValueAsString(like1))
@@ -223,7 +231,9 @@ public class LikesControllerTest {
 
         verify(likesService, times(1)).findById(anyLong());
         verify(likesService, times(1)).save(any(Likes.class));
+        verify(messages, times(2)).getUpdated();
         verifyNoMoreInteractions(likesService);
+        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -287,6 +297,7 @@ public class LikesControllerTest {
     @Test
     public void delete_withProperId() throws Exception {
         doNothing().when(likesService).delete(anyLong());
+        when(messages.getDeleted()).thenReturn(DELETED_MESSAGE);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/likes/{id}", 1))
                 .andExpect(status().isOk())
@@ -294,7 +305,9 @@ public class LikesControllerTest {
                 .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
 
         verify(likesService, times(1)).delete(anyLong());
+        verify(messages, times(2)).getDeleted();
         verifyNoMoreInteractions(likesService);
+        verifyNoMoreInteractions(messages);
     }
 
     @Test

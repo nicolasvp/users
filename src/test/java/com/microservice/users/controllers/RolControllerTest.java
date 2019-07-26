@@ -49,9 +49,13 @@ public class RolControllerTest {
     @InjectMocks
     private RolController rolController;
 
-	@Autowired
-	private MessagesTranslate messages;
-	
+    @Mock
+    private MessagesTranslate messages;
+
+    private static final String CREATED_MESSAGE = "Record succesfully created";
+    private static final String UPDATED_MESSAGE = "Record succesfully updated";
+    private static final String DELETED_MESSAGE = "Record succesfully deleted";
+
     private List<Rol> dummyRoles;
     
     private List<String> invalidParamsMessages = new ArrayList<>();
@@ -168,6 +172,7 @@ public class RolControllerTest {
     @Test
     public void create_withProperRol() throws Exception {
         when(rolService.save(any(Rol.class))).thenReturn(rol1);
+        when(messages.getCreated()).thenReturn(CREATED_MESSAGE);
 
         mockMvc.perform(post("/api/roles")
                 .content(objectMapper.writeValueAsString(rol1))
@@ -181,7 +186,9 @@ public class RolControllerTest {
                 .andExpect(jsonPath("$.msg", is(messages.getCreated())));
 
         verify(rolService, times(1)).save(any(Rol.class));
+        verify(messages, times(2)).getCreated();
         verifyNoMoreInteractions(rolService);
+        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -236,6 +243,7 @@ public class RolControllerTest {
     public void update_withProperRolAndId() throws Exception {
         when(rolService.findById(anyLong())).thenReturn(rol1);
         when(rolService.save(any(Rol.class))).thenReturn(rol1);
+        when(messages.getUpdated()).thenReturn(UPDATED_MESSAGE);
 
         mockMvc.perform(put("/api/roles/{id}", 1)
                 .content(objectMapper.writeValueAsString(rol1))
@@ -250,7 +258,9 @@ public class RolControllerTest {
 
         verify(rolService, times(1)).findById(anyLong());
         verify(rolService, times(1)).save(any(Rol.class));
+        verify(messages, times(2)).getUpdated();
         verifyNoMoreInteractions(rolService);
+        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -330,6 +340,7 @@ public class RolControllerTest {
     @Test
     public void delete_withProperId() throws Exception {
         doNothing().when(rolService).delete(anyLong());
+        when(messages.getDeleted()).thenReturn(DELETED_MESSAGE);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/roles/{id}", 1))
                 .andExpect(status().isOk())
@@ -337,7 +348,9 @@ public class RolControllerTest {
                 .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
 
         verify(rolService, times(1)).delete(anyLong());
+        verify(messages, times(2)).getDeleted();
         verifyNoMoreInteractions(rolService);
+        verifyNoMoreInteractions(messages);
     }
 
     @Test

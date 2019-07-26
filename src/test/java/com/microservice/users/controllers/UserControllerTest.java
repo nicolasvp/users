@@ -63,6 +63,10 @@ public class UserControllerTest {
     @Mock
     private MessagesTranslate messages;
 
+    private static final String CREATED_MESSAGE = "Record succesfully created";
+    private static final String UPDATED_MESSAGE = "Record succesfully updated";
+    private static final String DELETED_MESSAGE = "Record succesfully deleted";
+
     private List<User> dummyUsers;
     private List<Phrase> dummyPhrases;
 
@@ -90,7 +94,6 @@ public class UserControllerTest {
         setInvalidUser();
         setInvalidUserParamsMessages();
         setEmptyUserMessages();
-        //setCrudMessages();
     }
 
     private void createDummyUsers() {
@@ -149,13 +152,6 @@ public class UserControllerTest {
         emptyUserMessages.add("El campo email no puede estar vacío");
         emptyUserMessages.add("El campo lastName no puede estar vacío");
         emptyUserMessages.add("El campo password no puede estar vacío");
-    }
-
-    private void setCrudMessages() {
-        MessagesTranslate messages = new MessagesTranslate();
-        ReflectionTestUtils.setField(messages, "created", "Record succesfully created");
-        ReflectionTestUtils.setField(messages, "updated", "Record succesfully updated");
-        ReflectionTestUtils.setField(messages, "deleted", "Record succesfully deleted");
     }
 
     @Test
@@ -225,7 +221,7 @@ public class UserControllerTest {
     @Test
     public void create_withProperUser() throws Exception {
         when(userService.save(any(User.class))).thenReturn(user1);
-        when(messages.getCreated()).thenReturn("Record succesfully created");
+        when(messages.getCreated()).thenReturn(CREATED_MESSAGE);
 
         mockMvc.perform(post("/api/users")
                 .content(objectMapper.writeValueAsString(user1))
@@ -302,7 +298,7 @@ public class UserControllerTest {
     public void update_withProperUserAndId() throws Exception {
         when(userService.findById(anyLong())).thenReturn(user1);
         when(userService.save(any(User.class))).thenReturn(user1);
-        when(messages.getUpdated()).thenReturn("Record succesfully updated");
+        when(messages.getUpdated()).thenReturn(UPDATED_MESSAGE);
 
         mockMvc.perform(put("/api/users/{id}", 1L)
                 .content(objectMapper.writeValueAsString(user1))
@@ -404,7 +400,7 @@ public class UserControllerTest {
     @Test
     public void delete_withProperId() throws Exception {
         doNothing().when(userService).delete(anyLong());
-        when(messages.getDeleted()).thenReturn("Record succesfully deleted");
+        when(messages.getDeleted()).thenReturn(DELETED_MESSAGE);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", 1))
                 .andExpect(status().isOk())
@@ -414,6 +410,7 @@ public class UserControllerTest {
         verify(userService, times(1)).delete(anyLong());
         verify(messages, times(2)).getDeleted();
         verifyNoMoreInteractions(userService);
+        verifyNoMoreInteractions(messages);
     }
 
     @Test
