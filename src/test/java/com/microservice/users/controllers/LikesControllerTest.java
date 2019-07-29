@@ -1,7 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.users.config.MessagesTranslate;
+import com.microservice.users.enums.CrudMessagesEnum;
 import com.microservice.users.models.entity.Likes;
 import com.microservice.users.models.entity.Rol;
 import com.microservice.users.models.entity.User;
@@ -12,18 +12,15 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -51,13 +48,6 @@ public class LikesControllerTest {
 
     @InjectMocks
     private LikesController likesController;
-
-    @Mock
-    private MessagesTranslate messages;
-
-    private static final String CREATED_MESSAGE = "Record succesfully created";
-    private static final String UPDATED_MESSAGE = "Record succesfully updated";
-    private static final String DELETED_MESSAGE = "Record succesfully deleted";
 	
     private List<Likes> dummyLikes;
 
@@ -89,12 +79,12 @@ public class LikesControllerTest {
     }
 
     private void setInvalidLikeParamsMessages() {
-        invalidParamsMessages.add("El campo user debe tener entre 1 y 20 caracteres");
+        invalidParamsMessages.add("The user field must have 1 and 20 characters");
     }
 
     private void setEmptyLikeMessages() {
-        emptyLikeMessages.add("El campo user no puede estar vacío");
-        emptyLikeMessages.add("El campo phraseId no puede estar vacío");
+        emptyLikeMessages.add("The user field can't be empty");
+        emptyLikeMessages.add("The phraseId field can't be empty");
     }
 
     @Test
@@ -161,7 +151,6 @@ public class LikesControllerTest {
     @Test
     public void create_withProperLike() throws Exception {
         when(likesService.save(any(Likes.class))).thenReturn(like1);
-        when(messages.getCreated()).thenReturn(CREATED_MESSAGE);
 
         mockMvc.perform(post("/api/likes")
                 .content(objectMapper.writeValueAsString(like1))
@@ -172,12 +161,10 @@ public class LikesControllerTest {
                 .andExpect(jsonPath("$.like").exists())
                 .andExpect(jsonPath("$.like.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED_MESSAGE.getMessage())));
 
         verify(likesService, times(1)).save(any(Likes.class));
-        verify(messages, times(2)).getCreated();
         verifyNoMoreInteractions(likesService);
-        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -192,8 +179,8 @@ public class LikesControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo phraseId no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo user no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The phraseId field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The user field can't be empty")));
     }
 
     @Test
@@ -217,7 +204,6 @@ public class LikesControllerTest {
     public void update_withProperLikeAndId() throws Exception {
         when(likesService.findById(anyLong())).thenReturn(like1);
         when(likesService.save(any(Likes.class))).thenReturn(like1);
-        when(messages.getUpdated()).thenReturn(UPDATED_MESSAGE);
 
         mockMvc.perform(put("/api/likes/{id}", 1)
                 .content(objectMapper.writeValueAsString(like1))
@@ -227,13 +213,11 @@ public class LikesControllerTest {
                 .andExpect(jsonPath("$.like").exists())
                 .andExpect(jsonPath("$.like.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED_MESSAGE.getMessage())));
 
         verify(likesService, times(1)).findById(anyLong());
         verify(likesService, times(1)).save(any(Likes.class));
-        verify(messages, times(2)).getUpdated();
         verifyNoMoreInteractions(likesService);
-        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -256,8 +240,8 @@ public class LikesControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo phraseId no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo user no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The phraseId field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The user field can't be empty")));
     }
 
     @Test
@@ -297,17 +281,14 @@ public class LikesControllerTest {
     @Test
     public void delete_withProperId() throws Exception {
         doNothing().when(likesService).delete(anyLong());
-        when(messages.getDeleted()).thenReturn(DELETED_MESSAGE);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/likes/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED_MESSAGE.getMessage())));
 
         verify(likesService, times(1)).delete(anyLong());
-        verify(messages, times(2)).getDeleted();
         verifyNoMoreInteractions(likesService);
-        verifyNoMoreInteractions(messages);
     }
 
     @Test

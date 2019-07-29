@@ -1,7 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.users.config.MessagesTranslate;
+import com.microservice.users.enums.CrudMessagesEnum;
 import com.microservice.users.enums.DatabaseMessagesEnum;
 import com.microservice.users.models.entity.Config;
 import com.microservice.users.models.entity.History;
@@ -19,19 +19,16 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Mockito.*;
 import static org.hamcrest.Matchers.*;
@@ -59,13 +56,6 @@ public class UserControllerTest {
 
     @InjectMocks
     private UserController userController;
-
-    @Mock
-    private MessagesTranslate messages;
-
-    private static final String CREATED_MESSAGE = "Record succesfully created";
-    private static final String UPDATED_MESSAGE = "Record succesfully updated";
-    private static final String DELETED_MESSAGE = "Record succesfully deleted";
 
     private List<User> dummyUsers;
     private List<Phrase> dummyPhrases;
@@ -141,17 +131,17 @@ public class UserControllerTest {
     }
 
     private void setInvalidUserParamsMessages() {
-        invalidParamsMessages.add("El campo name debe tener entre 1 y 50 caracteres");
-        invalidParamsMessages.add("El campo email debe tener entre 1 y 30 caracteres");
-        invalidParamsMessages.add("El campo lastName debe tener entre 1 y 50 caracteres");
-        invalidParamsMessages.add("El campo password debe tener entre 1 y 100 caracteres");
+        invalidParamsMessages.add("The name field must have between 1 and 50 characters");
+        invalidParamsMessages.add("The email field must have between 1 and 30 characters");
+        invalidParamsMessages.add("The lastName field must have between 1 and 50 characters");
+        invalidParamsMessages.add("The password field must have between 1 and 100 characters");
     }
 
     private void setEmptyUserMessages() {
-        emptyUserMessages.add("El campo name no puede estar vacío");
-        emptyUserMessages.add("El campo email no puede estar vacío");
-        emptyUserMessages.add("El campo lastName no puede estar vacío");
-        emptyUserMessages.add("El campo password no puede estar vacío");
+        emptyUserMessages.add("The name field can't be empty");
+        emptyUserMessages.add("The email field can't be empty");
+        emptyUserMessages.add("The lastName field can't be empty");
+        emptyUserMessages.add("The password field can't be empty");
     }
 
     @Test
@@ -221,7 +211,6 @@ public class UserControllerTest {
     @Test
     public void create_withProperUser() throws Exception {
         when(userService.save(any(User.class))).thenReturn(user1);
-        when(messages.getCreated()).thenReturn(CREATED_MESSAGE);
 
         mockMvc.perform(post("/api/users")
                 .content(objectMapper.writeValueAsString(user1))
@@ -233,12 +222,10 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.user.id", is(1)))
                 .andExpect(jsonPath("$.user.name", is("USER 1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED_MESSAGE.getMessage())));
 
         verify(userService, times(1)).save(any(User.class));
-        verify(messages, times(2)).getCreated();
         verifyNoMoreInteractions(userService);
-        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -253,10 +240,10 @@ public class UserControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(4)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo email no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo lastName no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo password no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The email field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The lastName field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The password field can't be empty")));
     }
 
     @Test
@@ -271,10 +258,10 @@ public class UserControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(4)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name debe tener entre 1 y 50 caracteres")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo email debe tener entre 1 y 30 caracteres")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo lastName debe tener entre 1 y 50 caracteres")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo password debe tener entre 1 y 100 caracteres")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field must have between 1 and 50 characters")))
+                .andExpect(jsonPath("$.errors", hasItem("The email field must have between 1 and 30 characters")))
+                .andExpect(jsonPath("$.errors", hasItem("The lastName field must have between 1 and 50 characters")))
+                .andExpect(jsonPath("$.errors", hasItem("The password field must have between 1 and 100 characters")));
     }
 
     @Test
@@ -298,7 +285,6 @@ public class UserControllerTest {
     public void update_withProperUserAndId() throws Exception {
         when(userService.findById(anyLong())).thenReturn(user1);
         when(userService.save(any(User.class))).thenReturn(user1);
-        when(messages.getUpdated()).thenReturn(UPDATED_MESSAGE);
 
         mockMvc.perform(put("/api/users/{id}", 1L)
                 .content(objectMapper.writeValueAsString(user1))
@@ -310,13 +296,11 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.user.id", is(1)))
                 .andExpect(jsonPath("$.user.name", is("USER 1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED_MESSAGE.getMessage())));
 
         verify(userService, times(1)).findById(anyLong());
         verify(userService, times(1)).save(any(User.class));
-        verify(messages, times(2)).getUpdated();
         verifyNoMoreInteractions(userService);
-        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -339,10 +323,10 @@ public class UserControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(4)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo email no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo lastName no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo password no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The email field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The lastName field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The password field can't be empty")));
     }
 
     @Test
@@ -357,10 +341,10 @@ public class UserControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(4)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name debe tener entre 1 y 50 caracteres")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo email debe tener entre 1 y 30 caracteres")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo lastName debe tener entre 1 y 50 caracteres")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo password debe tener entre 1 y 100 caracteres")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field must have between 1 and 50 characters")))
+                .andExpect(jsonPath("$.errors", hasItem("The email field must have between 1 and 30 characters")))
+                .andExpect(jsonPath("$.errors", hasItem("The lastName field must have between 1 and 50 characters")))
+                .andExpect(jsonPath("$.errors", hasItem("The password field must have between 1 and 100 characters")));
     }
 
     @Test
@@ -400,17 +384,14 @@ public class UserControllerTest {
     @Test
     public void delete_withProperId() throws Exception {
         doNothing().when(userService).delete(anyLong());
-        when(messages.getDeleted()).thenReturn(DELETED_MESSAGE);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED_MESSAGE.getMessage())));
 
         verify(userService, times(1)).delete(anyLong());
-        verify(messages, times(2)).getDeleted();
         verifyNoMoreInteractions(userService);
-        verifyNoMoreInteractions(messages);
     }
 
     @Test

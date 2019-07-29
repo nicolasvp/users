@@ -1,7 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.users.config.MessagesTranslate;
+import com.microservice.users.enums.CrudMessagesEnum;
 import com.microservice.users.models.entity.Rol;
 import com.microservice.users.models.services.IRolService;
 import com.microservice.users.models.services.IUtilService;
@@ -10,18 +10,15 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -48,13 +45,6 @@ public class RolControllerTest {
 
     @InjectMocks
     private RolController rolController;
-
-    @Mock
-    private MessagesTranslate messages;
-
-    private static final String CREATED_MESSAGE = "Record succesfully created";
-    private static final String UPDATED_MESSAGE = "Record succesfully updated";
-    private static final String DELETED_MESSAGE = "Record succesfully deleted";
 
     private List<Rol> dummyRoles;
     
@@ -98,13 +88,13 @@ public class RolControllerTest {
     }
 
     private void setInvalidRolParamsMessages() {
-        invalidParamsMessages.add("El campo name debe tener entre 1 y 20 caracteres");
-        invalidParamsMessages.add("El campo description debe tener entre 1 y 300 caracteres");
+        invalidParamsMessages.add("The name field must have between 1 and 20 characters");
+        invalidParamsMessages.add("The description field must have between 1 and 300 characters");
     }
 
     private void setEmptyRolMessages() {
-        emptyRolMessages.add("El campo name no puede estar vacío");
-        emptyRolMessages.add("El campo description no puede estar vacío");
+        emptyRolMessages.add("The name field can't be empty");
+        emptyRolMessages.add("The description field can't be empty");
     }
 
     @Test
@@ -172,7 +162,6 @@ public class RolControllerTest {
     @Test
     public void create_withProperRol() throws Exception {
         when(rolService.save(any(Rol.class))).thenReturn(rol1);
-        when(messages.getCreated()).thenReturn(CREATED_MESSAGE);
 
         mockMvc.perform(post("/api/roles")
                 .content(objectMapper.writeValueAsString(rol1))
@@ -183,12 +172,10 @@ public class RolControllerTest {
                 .andExpect(jsonPath("$.rol.name", is("ROL1")))
                 .andExpect(jsonPath("$.rol.description", is("TEST ROL1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED_MESSAGE.getMessage())));
 
         verify(rolService, times(1)).save(any(Rol.class));
-        verify(messages, times(2)).getCreated();
         verifyNoMoreInteractions(rolService);
-        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -203,8 +190,8 @@ public class RolControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo description no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The description field can't be empty")));
     }
 
     @Test
@@ -219,8 +206,8 @@ public class RolControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name debe tener entre 1 y 20 caracteres")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo description debe tener entre 1 y 300 caracteres")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field must have between 1 and 20 characters")))
+                .andExpect(jsonPath("$.errors", hasItem("The description field must have between 1 and 300 characters")));
     }
 
     @Test
@@ -243,7 +230,6 @@ public class RolControllerTest {
     public void update_withProperRolAndId() throws Exception {
         when(rolService.findById(anyLong())).thenReturn(rol1);
         when(rolService.save(any(Rol.class))).thenReturn(rol1);
-        when(messages.getUpdated()).thenReturn(UPDATED_MESSAGE);
 
         mockMvc.perform(put("/api/roles/{id}", 1)
                 .content(objectMapper.writeValueAsString(rol1))
@@ -254,13 +240,11 @@ public class RolControllerTest {
                 .andExpect(jsonPath("$.rol.name", is("ROL1")))
                 .andExpect(jsonPath("$.rol.description", is("TEST ROL1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED_MESSAGE.getMessage())));
 
         verify(rolService, times(1)).findById(anyLong());
         verify(rolService, times(1)).save(any(Rol.class));
-        verify(messages, times(2)).getUpdated();
         verifyNoMoreInteractions(rolService);
-        verifyNoMoreInteractions(messages);
     }
 
     @Test
@@ -283,8 +267,8 @@ public class RolControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo description no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The description field can't be empty")));
     }
 
     @Test
@@ -299,8 +283,8 @@ public class RolControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name debe tener entre 1 y 20 caracteres")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo description debe tener entre 1 y 300 caracteres")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field must have between 1 and 20 characters")))
+                .andExpect(jsonPath("$.errors", hasItem("The description field must have between 1 and 300 characters")));
     }
 
     @Test
@@ -340,17 +324,14 @@ public class RolControllerTest {
     @Test
     public void delete_withProperId() throws Exception {
         doNothing().when(rolService).delete(anyLong());
-        when(messages.getDeleted()).thenReturn(DELETED_MESSAGE);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/roles/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED_MESSAGE.getMessage())));
 
         verify(rolService, times(1)).delete(anyLong());
-        verify(messages, times(2)).getDeleted();
         verifyNoMoreInteractions(rolService);
-        verifyNoMoreInteractions(messages);
     }
 
     @Test

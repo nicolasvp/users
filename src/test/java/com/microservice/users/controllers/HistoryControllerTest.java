@@ -1,7 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.users.config.MessagesTranslate;
+import com.microservice.users.enums.CrudMessagesEnum;
 import com.microservice.users.models.entity.History;
 import com.microservice.users.models.entity.User;
 import com.microservice.users.models.services.IHistoryService;
@@ -11,24 +11,20 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -51,9 +47,6 @@ public class HistoryControllerTest {
     @InjectMocks
     private HistoryController historyController;
 
-	@Autowired
-	private MessagesTranslate messages;
-	
     private List<History> dummyHistories;
 
     private List<String> invalidParamsMessages = new ArrayList<>();
@@ -72,12 +65,12 @@ public class HistoryControllerTest {
     }
 
     private void setInvalidHistoryParamsMessages() {
-        invalidParamsMessages.add("El campo user debe tener entre 1 y 20 caracteres");
+        invalidParamsMessages.add("The user field must have between 1 and 20 characters");
     }
 
     private void setEmptyHistoryMessages() {
-        emptyHistoryMessages.add("El campo user no puede estar vacío");
-        emptyHistoryMessages.add("El campo phraseId no puede estar vacío");
+        emptyHistoryMessages.add("The user field can't be empty");
+        emptyHistoryMessages.add("The phraseId field can't be empty");
     }
 
 
@@ -157,7 +150,7 @@ public class HistoryControllerTest {
     @Test
     public void create_withProperHistory() throws Exception {
         when(historyService.save(any(History.class))).thenReturn(history1);
-
+        
         mockMvc.perform(post("/api/histories")
                 .content(objectMapper.writeValueAsString(history1))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -167,7 +160,7 @@ public class HistoryControllerTest {
                 .andExpect(jsonPath("$.history").exists())
                 .andExpect(jsonPath("$.history.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED_MESSAGE.getMessage())));
 
         verify(historyService, times(1)).save(any(History.class));
         verifyNoMoreInteractions(historyService);
@@ -185,8 +178,8 @@ public class HistoryControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo phraseId no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo user no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The phraseId field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The user field can't be empty")));
     }
 
     @Test
@@ -210,7 +203,7 @@ public class HistoryControllerTest {
     public void update_withProperHistoryAndId() throws Exception {
         when(historyService.findById(anyLong())).thenReturn(history1);
         when(historyService.save(any(History.class))).thenReturn(history1);
-
+        
         mockMvc.perform(put("/api/histories/{id}", 1)
                 .content(objectMapper.writeValueAsString(history1))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -219,7 +212,7 @@ public class HistoryControllerTest {
                 .andExpect(jsonPath("$.history").exists())
                 .andExpect(jsonPath("$.history.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED_MESSAGE.getMessage())));
 
         verify(historyService, times(1)).findById(anyLong());
         verify(historyService, times(1)).save(any(History.class));
@@ -246,8 +239,8 @@ public class HistoryControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo phraseId no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo user no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The phraseId field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The user field can't be empty")));
     }
 
     @Test
@@ -287,11 +280,11 @@ public class HistoryControllerTest {
     @Test
     public void delete_withProperId() throws Exception {
         doNothing().when(historyService).delete(anyLong());
-
+        
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/histories/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED_MESSAGE.getMessage())));
 
         verify(historyService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(historyService);

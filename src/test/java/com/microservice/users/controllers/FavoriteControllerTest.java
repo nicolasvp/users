@@ -1,7 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.users.config.MessagesTranslate;
+import com.microservice.users.enums.CrudMessagesEnum;
 import com.microservice.users.models.entity.Favorite;
 import com.microservice.users.models.entity.User;
 import com.microservice.users.models.services.IFavoriteService;
@@ -11,24 +11,20 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -51,9 +47,6 @@ public class FavoriteControllerTest {
     @InjectMocks
     private FavoriteController favoriteController;
 
-	@Autowired
-	private MessagesTranslate messages;
-	
     private List<Favorite> dummyFavorites;
 
     private List<String> invalidParamsMessages = new ArrayList<>();
@@ -72,12 +65,12 @@ public class FavoriteControllerTest {
     }
 
     private void setInvalidFavoriteParamsMessages() {
-        invalidParamsMessages.add("El campo user debe tener entre 1 y 20 caracteres");
+        invalidParamsMessages.add("The user field must have between 1 and 20 characters");
     }
 
     private void setEmptyFavoriteMessages() {
-        emptyFavoriteMessages.add("El campo user no puede estar vacío");
-        emptyFavoriteMessages.add("El campo phraseId no puede estar vacío");
+        emptyFavoriteMessages.add("The user field can't be empty");
+        emptyFavoriteMessages.add("The phraseId field can't be empty");
     }
 
     @Before
@@ -156,7 +149,7 @@ public class FavoriteControllerTest {
     @Test
     public void create_withProperFavorite() throws Exception {
         when(favoriteService.save(any(Favorite.class))).thenReturn(favorite1);
-
+        
         mockMvc.perform(post("/api/favorities")
                 .content(objectMapper.writeValueAsString(favorite1))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -166,7 +159,7 @@ public class FavoriteControllerTest {
                 .andExpect(jsonPath("$.favorite").exists())
                 .andExpect(jsonPath("$.favorite.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED_MESSAGE.getMessage())));
 
         verify(favoriteService, times(1)).save(any(Favorite.class));
         verifyNoMoreInteractions(favoriteService);
@@ -184,8 +177,8 @@ public class FavoriteControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo phraseId no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo user no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The phraseId field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The user field can't be empty")));
     }
 
     @Test
@@ -209,7 +202,7 @@ public class FavoriteControllerTest {
     public void update_withProperFavoriteAndId() throws Exception {
         when(favoriteService.findById(anyLong())).thenReturn(favorite1);
         when(favoriteService.save(any(Favorite.class))).thenReturn(favorite1);
-
+        
         mockMvc.perform(put("/api/favorities/{id}", 1)
                 .content(objectMapper.writeValueAsString(favorite1))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -218,7 +211,7 @@ public class FavoriteControllerTest {
                 .andExpect(jsonPath("$.favorite").exists())
                 .andExpect(jsonPath("$.favorite.phraseId", is(1)))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED_MESSAGE.getMessage())));
 
         verify(favoriteService, times(1)).findById(anyLong());
         verify(favoriteService, times(1)).save(any(Favorite.class));
@@ -245,8 +238,8 @@ public class FavoriteControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo phraseId no puede estar vacío")))
-                .andExpect(jsonPath("$.errors", hasItem("El campo user no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The phraseId field can't be empty")))
+                .andExpect(jsonPath("$.errors", hasItem("The user field can't be empty")));
     }
 
     @Test
@@ -286,11 +279,11 @@ public class FavoriteControllerTest {
     @Test
     public void delete_withProperId() throws Exception {
         doNothing().when(favoriteService).delete(anyLong());
-
+        
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/favorities/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED_MESSAGE.getMessage())));
 
         verify(favoriteService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(favoriteService);

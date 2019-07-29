@@ -1,7 +1,7 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.users.config.MessagesTranslate;
+import com.microservice.users.enums.CrudMessagesEnum;
 import com.microservice.users.models.entity.Config;
 import com.microservice.users.models.entity.Language;
 import com.microservice.users.models.entity.Rol;
@@ -12,23 +12,19 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -51,9 +47,6 @@ public class LanguageControllerTest {
     @InjectMocks
     private LanguageController languageController;
 
-	@Autowired
-	private MessagesTranslate messages;
-	
     private List<Language> dummyLanguages;
 
     private List<String> invalidParamsMessages = new ArrayList<>();
@@ -94,11 +87,11 @@ public class LanguageControllerTest {
     }
 
     private void setInvalidLanguageParamsMessages() {
-        invalidParamsMessages.add("El campo name debe tener entre 1 y 20 caracteres");
+        invalidParamsMessages.add("The name field must have between 1 and 20 characters");
     }
 
     private void setEmptyLanguageMessages() {
-        emptyLanguageMessages.add("El campo name no puede estar vacío");
+        emptyLanguageMessages.add("The name field can't be empty");
     }
 
     @Test
@@ -165,7 +158,7 @@ public class LanguageControllerTest {
     @Test
     public void create_withProperLanguage() throws Exception {
         when(languageService.save(any(Language.class))).thenReturn(language1);
-
+        
         mockMvc.perform(post("/api/languages")
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -174,7 +167,7 @@ public class LanguageControllerTest {
                 .andExpect(jsonPath("$.language").exists())
                 .andExpect(jsonPath("$.language.name", is("Language1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getCreated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED_MESSAGE.getMessage())));
 
         verify(languageService, times(1)).save(any(Language.class));
         verifyNoMoreInteractions(languageService);
@@ -192,7 +185,7 @@ public class LanguageControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field can't be empty")));
     }
 
     @Test
@@ -207,7 +200,7 @@ public class LanguageControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name debe tener entre 1 y 20 caracteres")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field must have between 1 and 20 characters")));
     }
 
     @Test
@@ -231,7 +224,7 @@ public class LanguageControllerTest {
     public void update_withProperLanguageAndId() throws Exception {
         when(languageService.findById(anyLong())).thenReturn(language1);
         when(languageService.save(any(Language.class))).thenReturn(language1);
-
+        
         mockMvc.perform(put("/api/languages/{id}", 1)
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
@@ -240,7 +233,7 @@ public class LanguageControllerTest {
                 .andExpect(jsonPath("$.language").exists())
                 .andExpect(jsonPath("$.language.name", is("Language1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getUpdated())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED_MESSAGE.getMessage())));
 
         verify(languageService, times(1)).findById(anyLong());
         verify(languageService, times(1)).save(any(Language.class));
@@ -267,7 +260,7 @@ public class LanguageControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name no puede estar vacío")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field can't be empty")));
     }
 
     @Test
@@ -282,7 +275,7 @@ public class LanguageControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
                 .andExpect(jsonPath("$.errors", hasSize(1)))
-                .andExpect(jsonPath("$.errors", hasItem("El campo name debe tener entre 1 y 20 caracteres")));
+                .andExpect(jsonPath("$.errors", hasItem("The name field must have between 1 and 20 characters")));
     }
 
     @Test
@@ -322,12 +315,12 @@ public class LanguageControllerTest {
     @Test
     public void delete_withProperId() throws Exception {
         doNothing().when(languageService).delete(anyLong());
-
+        
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/languages/{id}", 1))
         		.andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(messages.getDeleted())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED_MESSAGE.getMessage())));
 
         verify(languageService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(languageService);

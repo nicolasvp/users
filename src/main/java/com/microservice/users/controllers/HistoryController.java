@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
-
 import com.microservice.users.models.services.IUtilService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +21,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.microservice.users.config.MessagesTranslate;
+import com.microservice.users.enums.CrudMessagesEnum;
 import com.microservice.users.enums.DatabaseMessagesEnum;
 import com.microservice.users.exceptions.DatabaseAccessException;
 import com.microservice.users.exceptions.NullRecordException;
@@ -42,9 +40,6 @@ public class HistoryController {
 	@Autowired
 	private IUtilService utilService;
 
-	@Autowired
-	private MessagesTranslate messages;
-	
 	@GetMapping(path="/histories", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<History> index(){
 		return historyService.findAll();
@@ -87,7 +82,7 @@ public class HistoryController {
 			throw new DatabaseAccessException(DatabaseMessagesEnum.STORE_RECORD.getMessage(), e);
 		}
 
-		response.put("msg", messages.getCreated());
+		response.put("msg", CrudMessagesEnum.CREATED_MESSAGE.getMessage());
 		response.put("history", newHistory);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
@@ -119,7 +114,7 @@ public class HistoryController {
 			throw new DatabaseAccessException(DatabaseMessagesEnum.UPDATE_RECORD.getMessage(), e);
 		}
 
-		response.put("msg", messages.getUpdated());
+		response.put("msg", CrudMessagesEnum.UPDATED_MESSAGE.getMessage());
 		response.put("history", historyUpdated);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
@@ -136,7 +131,7 @@ public class HistoryController {
 			throw new DatabaseAccessException(DatabaseMessagesEnum.DELETE_RECORD.getMessage(), e);
 		}
 
-		response.put("msg", messages.getDeleted());
+		response.put("msg", CrudMessagesEnum.DELETED_MESSAGE.getMessage());
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
