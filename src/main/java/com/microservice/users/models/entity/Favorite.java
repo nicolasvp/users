@@ -30,11 +30,11 @@ public class Favorite implements Serializable {
 
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="user_id")
-	@NotNull(message="no puede estar vacío")
+	@NotNull(message="can't be empty")
 	private User user;
 
 	@Column(name="phrase_id")
-	@NotNull(message="no puede estar vacío")
+	@NotNull(message="can't be empty")
 	private Long phraseId;
 	
 	@Column(name="created_at")

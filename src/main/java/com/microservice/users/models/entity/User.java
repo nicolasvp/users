@@ -34,22 +34,22 @@ public class User implements Serializable {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@NotEmpty(message="no puede estar vacío")
-	@Size(min=1, max=50, message="debe tener entre 1 y 50 caracteres")
+	@NotEmpty(message="can't be empty")
+	@Size(min=1, max=50, message="must have between 1 and 50 characters")
 	private String name;
 	
 	@Column(name="last_name")
-	@NotEmpty(message="no puede estar vacío")
-	@Size(min=1, max=50, message="debe tener entre 1 y 50 caracteres")
+	@NotEmpty(message="can't be empty")
+	@Size(min=1, max=50, message="must have between 1 and 50 characters")
 	private String lastName;
 	
 	@Column(unique=true)
-	@NotEmpty(message="no puede estar vacío")
-	@Size(min=1, max=30, message="debe tener entre 1 y 30 caracteres")
+	@NotEmpty(message="can't be empty")
+	@Size(min=1, max=30, message="must have between 1 and 30 characters")
 	private String email;
 	
-	@NotEmpty(message="no puede estar vacío")
-	@Size(min=1, max=100, message="debe tener entre 1 y 100 caracteres")
+	@NotEmpty(message="can't be empty")
+	@Size(min=1, max=100, message="must have between 1 and 100 characters")
 	private String password;
 	
 	@Column(name="created_at")

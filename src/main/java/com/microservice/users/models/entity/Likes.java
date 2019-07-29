@@ -28,12 +28,12 @@ public class Likes implements Serializable {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@NotNull(message="no puede estar vacío")
+	@NotNull(message="can't be empty")
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="user_id")
 	private User user;
 	
-	@NotNull(message="no puede estar vacío")
+	@NotNull(message="can't be empty")
 	@Column(name="phrase_id")
 	private Long phraseId;
 	
