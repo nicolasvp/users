@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
-import com.microservice.users.models.services.IUtilService;
+import com.microservices.commons.models.services.IUtilService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.microservice.users.enums.CrudMessagesEnum;
-import com.microservice.users.enums.DatabaseMessagesEnum;
-import com.microservice.users.exceptions.DatabaseAccessException;
-import com.microservice.users.exceptions.NullRecordException;
-import com.microservice.users.models.entity.Language;
+import com.microservices.commons.enums.CrudMessagesEnum;
+import com.microservices.commons.enums.DatabaseMessagesEnum;
+import com.microservices.commons.exceptions.DatabaseAccessException;
+import com.microservices.commons.exceptions.NullRecordException;
+import com.microservices.commons.models.entity.users.Language;
 import com.microservice.users.models.services.ILanguageService;
 
 @RestController
@@ -82,7 +82,7 @@ public class LanguageController {
 			throw new DatabaseAccessException(DatabaseMessagesEnum.STORE_RECORD.getMessage(), e);
 		}
 
-		response.put("msg", CrudMessagesEnum.CREATED_MESSAGE.getMessage());
+		response.put("msg", CrudMessagesEnum.CREATED.getMessage());
 		response.put("language", newLanguage);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
@@ -113,7 +113,7 @@ public class LanguageController {
 			throw new DatabaseAccessException(DatabaseMessagesEnum.UPDATE_RECORD.getMessage(), e);
 		}
 
-		response.put("msg", CrudMessagesEnum.UPDATED_MESSAGE.getMessage());
+		response.put("msg", CrudMessagesEnum.UPDATED.getMessage());
 		response.put("language", languageUpdated);
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
@@ -130,7 +130,7 @@ public class LanguageController {
 			throw new DatabaseAccessException(DatabaseMessagesEnum.DELETE_RECORD.getMessage(), e);
 		}
 
-		response.put("msg", CrudMessagesEnum.DELETED_MESSAGE.getMessage());
+		response.put("msg", CrudMessagesEnum.DELETED.getMessage());
 
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}

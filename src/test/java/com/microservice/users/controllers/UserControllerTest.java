@@ -1,19 +1,18 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.users.enums.CrudMessagesEnum;
-import com.microservice.users.enums.DatabaseMessagesEnum;
-import com.microservice.users.models.entity.Config;
-import com.microservice.users.models.entity.History;
-import com.microservice.users.models.entity.Language;
-import com.microservice.users.models.entity.User;
-import com.microservice.users.models.services.IHistoryService;
+import com.microservices.commons.enums.CrudMessagesEnum;
+import com.microservices.commons.models.entity.users.Config;
+import com.microservices.commons.models.entity.delivery.History;
+import com.microservices.commons.models.entity.users.Language;
+import com.microservices.commons.models.entity.users.User;
+//import com.microservice.users.models.services.IHistoryService;
 import com.microservice.users.models.services.IUserService;
-import com.microservice.users.models.services.IUtilService;
-import com.microservice.users.models.services.remote.entity.Author;
-import com.microservice.users.models.services.remote.entity.Image;
-import com.microservice.users.models.services.remote.entity.Phrase;
-import com.microservice.users.models.services.remote.entity.Type;
+import com.microservices.commons.models.services.IUtilService;
+import com.microservices.commons.models.entity.phrases.Author;
+import com.microservices.commons.models.entity.phrases.Image;
+import com.microservices.commons.models.entity.phrases.Phrase;
+import com.microservices.commons.models.entity.phrases.Type;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -21,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -48,8 +46,8 @@ public class UserControllerTest {
     @Mock
     private IUserService userService;
 
-    @Mock
-    private IHistoryService historyService;
+    //@Mock
+    //private IHistoryService historyService;
 
     @Mock
     private IUtilService utilService;
@@ -93,7 +91,7 @@ public class UserControllerTest {
         user1.setEmail("EMAIL 1");
         user1.setPassword("PASSWORD 1");
         user1.setConfig(new Config(user1, new Language(), 1, true, new Date()));
-        user1.setHistory(Arrays.asList(new History(user1, 1L, new Date())));
+        //user1.setHistory(Arrays.asList(new History(user1, 1L, new Date())));
 
         user2.setId(2L);
         user2.setName("USER 2");
@@ -222,7 +220,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.user.id", is(1)))
                 .andExpect(jsonPath("$.user.name", is("USER 1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED_MESSAGE.getMessage())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED.getMessage())));
 
         verify(userService, times(1)).save(any(User.class));
         verifyNoMoreInteractions(userService);
@@ -296,7 +294,7 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.user.id", is(1)))
                 .andExpect(jsonPath("$.user.name", is("USER 1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED_MESSAGE.getMessage())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED.getMessage())));
 
         verify(userService, times(1)).findById(anyLong());
         verify(userService, times(1)).save(any(User.class));
@@ -388,7 +386,7 @@ public class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED_MESSAGE.getMessage())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED.getMessage())));
 
         verify(userService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(userService);
@@ -420,11 +418,11 @@ public class UserControllerTest {
 
     @Test
     public void setPhrases_whenItsOk() throws Exception {
-        History history = new History(user1, 1L, new Date());
+        //History history = new History(user1, 1L, new Date());
 
         when(userService.findAll()).thenReturn(dummyUsers);
         when(userService.getAllPhrases()).thenReturn(dummyPhrases);
-        when(historyService.save(any(History.class))).thenReturn(history);
+        //when(historyService.save(any(History.class))).thenReturn(history);
         when(userService.filterPhraseByAvailability(anyList(), anyList())).thenReturn(dummyPhrases);
 
         mockMvc.perform(get("/api/users/set-phrases-to-users")
@@ -435,7 +433,7 @@ public class UserControllerTest {
 
     @Test
     public void setPhrases_whenDBFailsThenThrowsException() throws Exception {
-        when(historyService.save(any(History.class))).thenThrow(new DataAccessException("..."){});
+       // when(historyService.save(any(History.class))).thenThrow(new DataAccessException("..."){});
         when(userService.findAll()).thenReturn(dummyUsers);
         when(userService.getAllPhrases()).thenReturn(dummyPhrases);
         when(userService.filterPhraseByAvailability(anyList(), anyList())).thenReturn(dummyPhrases);

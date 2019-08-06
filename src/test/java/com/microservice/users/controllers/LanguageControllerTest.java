@@ -1,12 +1,12 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.users.enums.CrudMessagesEnum;
-import com.microservice.users.models.entity.Config;
-import com.microservice.users.models.entity.Language;
-import com.microservice.users.models.entity.Rol;
+import com.microservices.commons.enums.CrudMessagesEnum;
+import com.microservices.commons.models.entity.users.Config;
+import com.microservices.commons.models.entity.users.Language;
+import com.microservices.commons.models.entity.users.Rol;
 import com.microservice.users.models.services.ILanguageService;
-import com.microservice.users.models.services.IUtilService;
+import com.microservices.commons.models.services.IUtilService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -167,7 +167,7 @@ public class LanguageControllerTest {
                 .andExpect(jsonPath("$.language").exists())
                 .andExpect(jsonPath("$.language.name", is("Language1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED_MESSAGE.getMessage())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED.getMessage())));
 
         verify(languageService, times(1)).save(any(Language.class));
         verifyNoMoreInteractions(languageService);
@@ -233,7 +233,7 @@ public class LanguageControllerTest {
                 .andExpect(jsonPath("$.language").exists())
                 .andExpect(jsonPath("$.language.name", is("Language1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED_MESSAGE.getMessage())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED.getMessage())));
 
         verify(languageService, times(1)).findById(anyLong());
         verify(languageService, times(1)).save(any(Language.class));
@@ -320,7 +320,7 @@ public class LanguageControllerTest {
         		.andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED_MESSAGE.getMessage())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED.getMessage())));
 
         verify(languageService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(languageService);

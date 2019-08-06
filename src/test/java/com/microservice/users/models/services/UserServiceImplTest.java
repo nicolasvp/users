@@ -17,10 +17,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.microservice.users.models.dao.IUserDao;
-import com.microservice.users.models.entity.History;
-import com.microservice.users.models.entity.User;
-import com.microservice.users.models.services.remote.entity.Phrase;
-import com.microservice.users.models.services.remote.entity.Type;
+import com.microservices.commons.models.entity.delivery.History;
+import com.microservices.commons.models.entity.users.User;
+import com.microservices.commons.models.entity.phrases.Phrase;
+import com.microservices.commons.models.entity.phrases.Type;
 
 public class UserServiceImplTest {
 
@@ -72,7 +72,7 @@ public class UserServiceImplTest {
 	private void dummyHistory(){
 		history.setId(1L);
 		history.setPhraseId(1L);
-		history.setUser(new User());
+		history.setUser(1L);
 		history.setCreatedAt(new Date());
 	}
 

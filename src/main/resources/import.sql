@@ -11,18 +11,8 @@ INSERT INTO users (name, last_name, email, password, rol_id, created_at) VALUES(
 INSERT INTO users (name, last_name, email, password, rol_id, created_at) VALUES('Ella', 'Hogg', 'Ella@mail.com', '123123', 2, NOW());
 INSERT INTO users (name, last_name, email, password, rol_id, created_at) VALUES('Stanislaw', 'Ward', 'Stanislaw@mail.com', '123123', 2, NOW());
 
-INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(1, 1, 1, 1, NOW());
-INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(2, 1, 2, 1, NOW());
-INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(3, 1, 1, 1, NOW());
-INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(4, 1, 2, 1, NOW());
-INSERT INTO user_config (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(5, 1, 0, 1, NOW());
-
-INSERT INTO user_history (user_id, phrase_id, created_at) VALUES(1, 1, NOW());
-INSERT INTO user_history (user_id, phrase_id, created_at) VALUES(1, 2, NOW());
-
-INSERT INTO user_likes (user_id, phrase_id, created_at) VALUES(1, 1, NOW());
-INSERT INTO user_likes (user_id, phrase_id, created_at) VALUES(1, 2, NOW());
-
-INSERT INTO user_favorities (user_id, phrase_id, created_at) VALUES(1, 1, NOW());
-INSERT INTO user_favorities (user_id, phrase_id, created_at) VALUES(1, 2, NOW());
-INSERT INTO user_favorities (user_id, phrase_id, created_at) VALUES(1, 3, NOW());
+INSERT INTO configuration (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(1, 1, 1, 1, NOW());
+INSERT INTO configuration (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(2, 1, 2, 1, NOW());
+INSERT INTO configuration (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(3, 1, 1, 1, NOW());
+INSERT INTO configuration (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(4, 1, 2, 1, NOW());
+INSERT INTO configuration (user_id, language_id, phrase_type, activate_plugin, created_at) VALUES(5, 1, 0, 1, NOW());

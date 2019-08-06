@@ -1,13 +1,11 @@
 package com.microservice.users.models.services;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.microservice.users.models.dao.ILanguageDao;
-import com.microservice.users.models.entity.Language;
+import com.microservices.commons.models.entity.users.Language;
 
 @Service
 public class LanguageServiceImpl implements ILanguageService{

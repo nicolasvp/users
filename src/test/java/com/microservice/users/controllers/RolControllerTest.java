@@ -1,10 +1,10 @@
 package com.microservice.users.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.microservice.users.enums.CrudMessagesEnum;
-import com.microservice.users.models.entity.Rol;
+import com.microservices.commons.enums.CrudMessagesEnum;
+import com.microservices.commons.models.entity.users.Rol;
 import com.microservice.users.models.services.IRolService;
-import com.microservice.users.models.services.IUtilService;
+import com.microservices.commons.models.services.IUtilService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -172,7 +172,7 @@ public class RolControllerTest {
                 .andExpect(jsonPath("$.rol.name", is("ROL1")))
                 .andExpect(jsonPath("$.rol.description", is("TEST ROL1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED_MESSAGE.getMessage())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.CREATED.getMessage())));
 
         verify(rolService, times(1)).save(any(Rol.class));
         verifyNoMoreInteractions(rolService);
@@ -240,7 +240,7 @@ public class RolControllerTest {
                 .andExpect(jsonPath("$.rol.name", is("ROL1")))
                 .andExpect(jsonPath("$.rol.description", is("TEST ROL1")))
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED_MESSAGE.getMessage())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.UPDATED.getMessage())));
 
         verify(rolService, times(1)).findById(anyLong());
         verify(rolService, times(1)).save(any(Rol.class));
@@ -328,7 +328,7 @@ public class RolControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/roles/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
-                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED_MESSAGE.getMessage())));
+                .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED.getMessage())));
 
         verify(rolService, times(1)).delete(anyLong());
         verifyNoMoreInteractions(rolService);

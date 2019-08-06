@@ -1,13 +1,11 @@
 package com.microservice.users.models.services;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.microservice.users.models.dao.IConfigDao;
-import com.microservice.users.models.entity.Config;
+import com.microservices.commons.models.entity.users.Config;
 
 @Service
 public class ConfigServiceImpl implements IConfigService {

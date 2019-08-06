@@ -4,16 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.microservice.users.models.dao.IUserDao;
-import com.microservice.users.models.entity.History;
-import com.microservice.users.models.entity.User;
+import com.microservices.commons.models.entity.delivery.History;
+import com.microservices.commons.models.entity.users.User;
 import com.microservice.users.models.services.remote.IPhraseRemoteCallService;
-import com.microservice.users.models.services.remote.entity.Phrase;
+import com.microservices.commons.models.entity.phrases.Phrase;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @Service

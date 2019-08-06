@@ -1,13 +1,11 @@
 package com.microservice.users.models.services;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.microservice.users.models.dao.IRolDao;
-import com.microservice.users.models.entity.Rol;
+import com.microservices.commons.models.entity.users.Rol;
 
 @Service
 public class RolServiceImpl implements IRolService{

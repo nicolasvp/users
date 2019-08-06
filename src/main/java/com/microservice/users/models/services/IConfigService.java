@@ -1,8 +1,7 @@
 package com.microservice.users.models.services;
 
 import java.util.List;
-
-import com.microservice.users.models.entity.Config;
+import com.microservices.commons.models.entity.users.Config;
 
 public interface IConfigService {
 

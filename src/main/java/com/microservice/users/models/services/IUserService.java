@@ -1,10 +1,9 @@
 package com.microservice.users.models.services;
 
 import java.util.List;
-
-import com.microservice.users.models.entity.History;
-import com.microservice.users.models.entity.User;
-import com.microservice.users.models.services.remote.entity.Phrase;
+import com.microservices.commons.models.entity.delivery.History;
+import com.microservices.commons.models.entity.users.User;
+import com.microservices.commons.models.entity.phrases.Phrase;
 
 public interface IUserService {
 

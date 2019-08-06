@@ -1,8 +1,7 @@
 package com.microservice.users.models.services;
 
 import java.util.List;
-
-import com.microservice.users.models.entity.Rol;
+import com.microservices.commons.models.entity.users.Rol;
 
 public interface IRolService {
 

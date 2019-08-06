@@ -1,8 +1,7 @@
 package com.microservice.users.models.services;
 
 import java.util.List;
-
-import com.microservice.users.models.entity.Language;
+import com.microservices.commons.models.entity.users.Language;
 
 public interface ILanguageService {
 
