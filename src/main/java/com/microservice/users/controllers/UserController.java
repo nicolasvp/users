@@ -29,7 +29,6 @@ import com.microservices.commons.models.entity.users.User;
 import com.microservice.users.models.services.IUserService;
 
 @RestController
-@RequestMapping("/api")
 public class UserController {
 
 	protected Logger LOGGER = LoggerFactory.getLogger(UserController.class);

@@ -29,7 +29,6 @@ import com.microservices.commons.models.entity.users.Rol;
 import com.microservice.users.models.services.IRolService;
 
 @RestController
-@RequestMapping("/api")
 public class RolController {
 
 	protected Logger LOGGER = LoggerFactory.getLogger(RolController.class);

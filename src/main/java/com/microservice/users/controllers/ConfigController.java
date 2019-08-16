@@ -29,7 +29,6 @@ import com.microservices.commons.models.entity.users.Config;
 import com.microservice.users.models.services.IConfigService;
 
 @RestController
-@RequestMapping("/api")
 public class ConfigController {
 
 	protected Logger LOGGER = LoggerFactory.getLogger(ConfigController.class);

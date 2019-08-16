@@ -29,7 +29,6 @@ import com.microservices.commons.models.entity.users.Language;
 import com.microservice.users.models.services.ILanguageService;
 
 @RestController
-@RequestMapping("/api")
 public class LanguageController {
 
 	protected Logger LOGGER = LoggerFactory.getLogger(LanguageController.class);
