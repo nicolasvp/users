@@ -67,6 +67,24 @@ public class UserController {
 		return new ResponseEntity<User>(user, HttpStatus.OK);
 	}
 	
+	@GetMapping(path="/users/search/{username}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> searchByUsername(@PathVariable String username) throws NullRecordException, DatabaseAccessException {
+		
+		User user = null;
+
+		try {
+			user = userService.findByUsername(username);
+		} catch (DataAccessException e) {
+			throw new DatabaseAccessException(DatabaseMessagesEnum.ACCESS_DATABASE.getMessage(), e);
+		}
+
+		if (user == null) {
+			throw new NullRecordException();
+		}
+
+		return new ResponseEntity<User>(user, HttpStatus.OK);
+	}
+	
 	@PostMapping(path="/users", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult result) throws DatabaseAccessException {
 		

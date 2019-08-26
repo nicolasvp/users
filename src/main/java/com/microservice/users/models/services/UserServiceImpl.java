@@ -38,6 +38,11 @@ public class UserServiceImpl implements IUserService{
 	}
 
 	@Override
+	public User findByUsername(String username) {
+		return userDao.findByUsername(username);
+	}
+	
+	@Override
 	public User save(User user) {
 		return userDao.save(user);
 	}
@@ -92,5 +97,4 @@ public class UserServiceImpl implements IUserService{
 		}
 		return allPhrases;
 	}
-
 }

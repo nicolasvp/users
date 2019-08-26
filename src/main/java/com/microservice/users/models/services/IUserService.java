@@ -11,6 +11,8 @@ public interface IUserService {
 	
 	public User findById(Long id);
 	
+	public User findByUsername(String username);
+	
 	public User save(User user);
 	
 	public void delete(Long id);
