@@ -18,16 +18,6 @@ public interface IUserService {
 	public void delete(Long id);
 	
 	/*
-	 * Filter the phrase list based on the user phrase type
-	 */
-	public  List<Phrase> filterPhrasesByType(List<Phrase> allPhrases, Integer phraseType);
-	
-	/*
-	 * Filter the phrase list based on the user history list, if the user has the phrase on this history then its removed from the "allPhrases" list
-	 */
-	public List<Phrase> filterPhraseByAvailability(List<Phrase> allPhrases, List<History> userHistory);
-	
-	/*
 	 * Remote calls methods
 	 */
 	public String callPhraseService();

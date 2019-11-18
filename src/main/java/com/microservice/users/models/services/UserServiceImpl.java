@@ -75,26 +75,4 @@ public class UserServiceImpl implements IUserService{
 	public String unavailableMessage() {
 		return "Phrases service is not available";
 	}
-
-	@Override
-	public List<Phrase> filterPhrasesByType(List<Phrase> allPhrases, Integer phraseType) {
-		if(!phraseType.equals(0)) {
-			return allPhrases
-					.stream()
-					.filter(phrase -> {
-						Long phraseTypeCastedToLong = Long.valueOf(phraseType.longValue());
-						return phrase.getType().getId().equals(phraseTypeCastedToLong);
-					})
-					.collect(Collectors.toList());
-		}
-		return allPhrases;
-	}
-
-	@Override
-	public List<Phrase> filterPhraseByAvailability(List<Phrase> allPhrases, List<History> userHistory) {
-		for(History history: userHistory) {
-			allPhrases.removeIf(phrase -> (history.getPhraseId().equals(phrase.getId())));
-		}
-		return allPhrases;
-	}
 }

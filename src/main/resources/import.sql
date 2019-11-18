@@ -1,5 +1,5 @@
-INSERT INTO roles (name, description, created_at) VALUES('Administrator', 'System Administrator', NOW());
-INSERT INTO roles (name, description, created_at) VALUES('User', 'Simple system user', NOW());
+INSERT INTO roles (name, description, created_at) VALUES('ROLE_ADMINISTRATOR', 'System Administrator', NOW());
+INSERT INTO roles (name, description, created_at) VALUES('ROLE_USER', 'Simple system user', NOW());
 
 INSERT INTO languages (name, created_at) VALUES('Español', NOW());
 INSERT INTO languages (name, created_at) VALUES('Inglés', NOW());
