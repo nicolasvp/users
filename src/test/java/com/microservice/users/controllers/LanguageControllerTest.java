@@ -98,7 +98,7 @@ public class LanguageControllerTest {
     public void index() throws Exception {
         when(languageService.findAll()).thenReturn(dummyLanguages);
 
-        mockMvc.perform(get("/api/languages")
+        mockMvc.perform(get("/languages")
                 .contentType("application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
@@ -115,7 +115,7 @@ public class LanguageControllerTest {
     public void show_withProperId() throws Exception {
         when(languageService.findById(1L)).thenReturn(language1);
 
-        mockMvc.perform(get("/api/languages/{id}", 1))
+        mockMvc.perform(get("/languages/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.name", is("Language1")));
@@ -126,14 +126,14 @@ public class LanguageControllerTest {
 
     @Test
     public void show_whenIdIsInvalid() throws Exception {
-        mockMvc.perform(get("/api/languages/{id}", "randomString"))
+        mockMvc.perform(get("/languages/{id}", "randomString"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void show_whenRecordDoesnotExist() throws Exception {
         when(languageService.findById(anyLong())).thenReturn(null);
-        mockMvc.perform(get("/api/languages/{id}", anyLong()))
+        mockMvc.perform(get("/languages/{id}", anyLong()))
                 .andExpect(status().isNotFound());
 
         verify(languageService, times(1)).findById(anyLong());
@@ -144,7 +144,7 @@ public class LanguageControllerTest {
     public void show_whenDBFailsThenThrowsException() throws Exception {
         when(languageService.findById(1L)).thenThrow(new DataAccessException("..."){});
 
-        mockMvc.perform(get("/api/languages/{id}", 1))
+        mockMvc.perform(get("/languages/{id}", 1))
                 .andExpect(status().isInternalServerError());
 
         verify(languageService, times(1)).findById(1L);
@@ -159,7 +159,7 @@ public class LanguageControllerTest {
     public void create_withProperLanguage() throws Exception {
         when(languageService.save(any(Language.class))).thenReturn(language1);
         
-        mockMvc.perform(post("/api/languages")
+        mockMvc.perform(post("/languages")
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -177,7 +177,7 @@ public class LanguageControllerTest {
     public void create_whenLanguageIsEmpty() throws Exception {
         when(utilService.listErrors(any())).thenReturn(emptyLanguageMessages);
 
-        mockMvc.perform(post("/api/languages")
+        mockMvc.perform(post("/languages")
                 .content(objectMapper.writeValueAsString(new Language()))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -192,7 +192,7 @@ public class LanguageControllerTest {
     public void create_whenLanguageHasInvalidParams() throws Exception {
         when(utilService.listErrors(any())).thenReturn(invalidParamsMessages);
 
-        mockMvc.perform(post("/api/languages")
+        mockMvc.perform(post("/languages")
                 .content(objectMapper.writeValueAsString(invalidLanguage))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -207,7 +207,7 @@ public class LanguageControllerTest {
     public void create_whenDBFailsThenThrowsException() throws Exception {
         when(languageService.save(any(Language.class))).thenThrow(new DataAccessException("..."){});
 
-        mockMvc.perform(post("/api/languages")
+        mockMvc.perform(post("/languages")
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
@@ -225,7 +225,7 @@ public class LanguageControllerTest {
         when(languageService.findById(anyLong())).thenReturn(language1);
         when(languageService.save(any(Language.class))).thenReturn(language1);
         
-        mockMvc.perform(put("/api/languages/{id}", 1)
+        mockMvc.perform(put("/languages/{id}", 1)
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -242,7 +242,7 @@ public class LanguageControllerTest {
 
     @Test
     public void update_whenLanguageIsProper_andInvalidId() throws Exception {
-        mockMvc.perform(put("/api/languages/{id}", "randomString")
+        mockMvc.perform(put("/languages/{id}", "randomString")
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -252,7 +252,7 @@ public class LanguageControllerTest {
     public void update_whenLanguageIsEmpty_AndProperId() throws Exception {
         when(utilService.listErrors(any())).thenReturn(emptyLanguageMessages);
 
-        mockMvc.perform(put("/api/languages/{id}", 1)
+        mockMvc.perform(put("/languages/{id}", 1)
                 .content(objectMapper.writeValueAsString(new Rol()))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -267,7 +267,7 @@ public class LanguageControllerTest {
     public void update_whenLanguageIsInvalid_AndProperId() throws Exception {
         when(utilService.listErrors(any())).thenReturn(invalidParamsMessages);
 
-        mockMvc.perform(put("/api/languages/{id}", 1)
+        mockMvc.perform(put("/languages/{id}", 1)
                 .content(objectMapper.writeValueAsString(invalidLanguage))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -282,7 +282,7 @@ public class LanguageControllerTest {
     public void update_whenLanguageIsNotFound() throws Exception {
         when(languageService.findById(anyLong())).thenReturn(null);
 
-        mockMvc.perform(put("/api/languages/{id}", anyLong())
+        mockMvc.perform(put("/languages/{id}", anyLong())
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -297,7 +297,7 @@ public class LanguageControllerTest {
         when(languageService.save(any(Language.class))).thenThrow(new DataAccessException("..."){});
         when(languageService.findById(anyLong())).thenReturn(language1);
 
-        mockMvc.perform(put("/api/languages/{id}", 1)
+        mockMvc.perform(put("/languages/{id}", 1)
                 .content(objectMapper.writeValueAsString(language1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -316,7 +316,7 @@ public class LanguageControllerTest {
     public void delete_withProperId() throws Exception {
         doNothing().when(languageService).delete(anyLong());
         
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/languages/{id}", 1))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/languages/{id}", 1))
         		.andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
@@ -329,7 +329,7 @@ public class LanguageControllerTest {
     @Test
     public void delete_withInvalidId() throws Exception {
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/languages/{id}", "randomString"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/languages/{id}", "randomString"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -337,7 +337,7 @@ public class LanguageControllerTest {
     public void delete_whenRolIsNotFoundThenThrowException() throws Exception {
         doThrow(new DataAccessException("..."){}).when(languageService).delete(anyLong());
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/languages/{id}", anyLong())
+        mockMvc.perform(MockMvcRequestBuilders.delete("/languages/{id}", anyLong())
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
                 .andExpect(status().isInternalServerError());

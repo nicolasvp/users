@@ -72,28 +72,19 @@ public class UserServiceImplTest {
 	private void dummyHistory(){
 		history.setId(1L);
 		history.setPhraseId(1L);
-		history.setUser(1L);
 		history.setCreatedAt(new Date());
 	}
 
     /**
-     * Tests just for increase the code coverage
+     * Tests just to increase code coverage
      */
-    
 	@Test
 	public void findAllUsersTest() {
 		when(userService.findAll()).thenReturn(dummyUsers);
 		List<User> allUsers = userService.findAll();
 		assertTrue("Success, number of users is 1", allUsers.size() == 1);
 	}
-/*
-	@Test
-	public void findByIdTest() {
-		UserServiceImpl userService = mock(UserServiceImpl.class);
-		userService.findById(1L);
-		verify(userService, times(1)).findById(1L);
-	}
-*/
+
 	@Test
 	public void saveUserTest() {
 		when(userService.save(user)).thenReturn(user);
@@ -108,27 +99,7 @@ public class UserServiceImplTest {
 		userService.delete(1L);
 		verify(userService, times(1)).delete(1L);
 	}
-	
-	@Test
-	public void filterPhrasesByType_withPhraseType_not0Test() {
-		Integer phraseType = 1;
-		List<Phrase> filteredPhrases = userService.filterPhrasesByType(dummyPhrases, phraseType);
-		assertTrue("Success, number of phrases is 1", filteredPhrases.size() == 1);
-	}
-	
-	@Test
-	public void filterPhrasesByType_withPhraseType_0Test() {
-		Integer phraseType = 0;
-		List<Phrase> filteredPhrases = userService.filterPhrasesByType(dummyPhrases, phraseType);
-		assertEquals(1, filteredPhrases.size());
-	}
-	
-	@Test
-	public void filterPhraseByAvailabilityTest() {
-		List<Phrase> filteredPhrases = userService.filterPhraseByAvailability(dummyPhrases, dummyUserHistory);
-		assertEquals(0, filteredPhrases.size());
-	}
-	
+
 	@Test
 	public void unavailableMessageTest() {
 		assertEquals("Phrases service is not available", userService.unavailableMessage());

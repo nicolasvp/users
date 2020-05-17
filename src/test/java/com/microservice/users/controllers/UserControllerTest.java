@@ -86,6 +86,7 @@ public class UserControllerTest {
 
     private void createDummyUsers() {
         user1.setId(1L);
+        user1.setUsername("USERNAME 1");
         user1.setName("USER 1");
         user1.setLastName("LASTNAME 1");
         user1.setEmail("EMAIL 1");
@@ -94,11 +95,13 @@ public class UserControllerTest {
         //user1.setHistory(Arrays.asList(new History(user1, 1L, new Date())));
 
         user2.setId(2L);
+        user2.setUsername("USERNAME 2");
         user2.setName("USER 2");
         user2.setEmail("EMAIL 2");
         user2.setConfig(new Config(user2, new Language(), 2, true, new Date()));
 
         user3.setId(3L);
+        user3.setUsername("USERNAME 3");
         user3.setName("USER 3");
         user3.setEmail("EMAIL 3");
         user3.setConfig(new Config(user3, new Language(), 3, true, new Date()));
@@ -146,7 +149,7 @@ public class UserControllerTest {
     public void index() throws Exception {
         when(userService.findAll()).thenReturn(dummyUsers);
 
-        mockMvc.perform(get("/api/users")
+        mockMvc.perform(get("/users")
                 .contentType("application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
@@ -163,7 +166,7 @@ public class UserControllerTest {
     public void show_withProperId() throws Exception {
         when(userService.findById(1L)).thenReturn(user1);
 
-        mockMvc.perform(get("/api/users/{id}", 1))
+        mockMvc.perform(get("/users/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.id", is(1)))
@@ -176,14 +179,14 @@ public class UserControllerTest {
 
     @Test
     public void show_whenIdIsInvalid() throws Exception {
-        mockMvc.perform(get("/api/users/{id}", "randomString"))
+        mockMvc.perform(get("/users/{id}", "randomString"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void show_whenRecordDoesnotExist() throws Exception {
         when(userService.findById(anyLong())).thenReturn(null);
-        mockMvc.perform(get("/api/users/{id}", anyLong()))
+        mockMvc.perform(get("/users/{id}", anyLong()))
         		//.andDo(print())
                 .andExpect(status().isNotFound());
 
@@ -194,7 +197,7 @@ public class UserControllerTest {
     @Test
     public void show_whenDBFailsThenThrowsException() throws Exception {
         when(userService.findById(1L)).thenThrow(new DataAccessException("..."){});
-        mockMvc.perform(get("/api/users/{id}", 1))
+        mockMvc.perform(get("/users/{id}", 1))
                 .andExpect(status().isInternalServerError());
 
         verify(userService, times(1)).findById(1L);
@@ -210,7 +213,7 @@ public class UserControllerTest {
     public void create_withProperUser() throws Exception {
         when(userService.save(any(User.class))).thenReturn(user1);
 
-        mockMvc.perform(post("/api/users")
+        mockMvc.perform(post("/users")
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
         		.andDo(print())
@@ -230,7 +233,7 @@ public class UserControllerTest {
     public void create_whenUserIsEmpty() throws Exception {
         when(utilService.listErrors(any())).thenReturn(emptyUserMessages);
 
-        mockMvc.perform(post("/api/users")
+        mockMvc.perform(post("/users")
                 .content(objectMapper.writeValueAsString(new User()))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -248,7 +251,7 @@ public class UserControllerTest {
     public void create_whenUserHasInvalidParams() throws Exception {
         when(utilService.listErrors(any())).thenReturn(invalidParamsMessages);
 
-        mockMvc.perform(post("/api/users")
+        mockMvc.perform(post("/users")
                 .content(objectMapper.writeValueAsString(invalidUser))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -266,7 +269,7 @@ public class UserControllerTest {
     public void create_whenDBFailsThenThrowsException() throws Exception {
         when(userService.save(any(User.class))).thenThrow(new DataAccessException("..."){});
 
-        mockMvc.perform(post("/api/users")
+        mockMvc.perform(post("/users")
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
@@ -284,7 +287,7 @@ public class UserControllerTest {
         when(userService.findById(anyLong())).thenReturn(user1);
         when(userService.save(any(User.class))).thenReturn(user1);
 
-        mockMvc.perform(put("/api/users/{id}", 1L)
+        mockMvc.perform(put("/users/{id}", 1L)
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -303,7 +306,7 @@ public class UserControllerTest {
 
     @Test
     public void update_whenUserIsProper_andInvalidId() throws Exception {
-        mockMvc.perform(put("/api/users/{id}", "randomString")
+        mockMvc.perform(put("/users/{id}", "randomString")
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -313,7 +316,7 @@ public class UserControllerTest {
     public void update_whenUserIsEmpty_AndProperId() throws Exception {
         when(utilService.listErrors(any())).thenReturn(emptyUserMessages);
 
-        mockMvc.perform(put("/api/users/{id}", 1)
+        mockMvc.perform(put("/users/{id}", 1)
                 .content(objectMapper.writeValueAsString(new User()))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -331,7 +334,7 @@ public class UserControllerTest {
     public void update_whenUserIsInvalid_AndProperId() throws Exception {
         when(utilService.listErrors(any())).thenReturn(invalidParamsMessages);
 
-        mockMvc.perform(put("/api/users/{id}", 1)
+        mockMvc.perform(put("/users/{id}", 1)
                 .content(objectMapper.writeValueAsString(invalidUser))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -349,7 +352,7 @@ public class UserControllerTest {
     public void update_whenUserIsNotFound() throws Exception {
         when(userService.findById(anyLong())).thenReturn(null);
 
-        mockMvc.perform(put("/api/users/{id}", anyLong())
+        mockMvc.perform(put("/users/{id}", anyLong())
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -364,7 +367,7 @@ public class UserControllerTest {
         when(userService.save(any(User.class))).thenThrow(new DataAccessException("..."){});
         when(userService.findById(anyLong())).thenReturn(user1);
 
-        mockMvc.perform(put("/api/users/{id}", 1)
+        mockMvc.perform(put("/users/{id}", 1)
                 .content(objectMapper.writeValueAsString(user1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -383,7 +386,7 @@ public class UserControllerTest {
     public void delete_withProperId() throws Exception {
         doNothing().when(userService).delete(anyLong());
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", 1))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/users/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED.getMessage())));
@@ -395,7 +398,7 @@ public class UserControllerTest {
     @Test
     public void delete_withInvalidId() throws Exception {
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", "randomString"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/users/{id}", "randomString"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -403,7 +406,7 @@ public class UserControllerTest {
     public void delete_whenUserIsNotFoundThenThrowException() throws Exception {
         doThrow(new DataAccessException("..."){}).when(userService).delete(anyLong());
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/{id}", anyLong())
+        mockMvc.perform(MockMvcRequestBuilders.delete("/users/{id}", anyLong())
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
                 .andExpect(status().isInternalServerError());
@@ -414,35 +417,49 @@ public class UserControllerTest {
 
     /* END DELETE userController method tests */
 
-    /* BEGIN SET PHRASES userController method tests */
+    /* BEGIN SEARCH USER BY USERNAME userController method tests */
 
     @Test
-    public void setPhrases_whenItsOk() throws Exception {
-        //History history = new History(user1, 1L, new Date());
+    public void search_withProperUsername() throws Exception {
+        when(userService.findByUsername(anyString())).thenReturn(user1);
 
-        when(userService.findAll()).thenReturn(dummyUsers);
-        when(userService.getAllPhrases()).thenReturn(dummyPhrases);
-        //when(historyService.save(any(History.class))).thenReturn(history);
-        when(userService.filterPhraseByAvailability(anyList(), anyList())).thenReturn(dummyPhrases);
+        mockMvc.perform(get("/users/search/{username}", "user1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.name", is("USER 1")))
+                .andExpect(jsonPath("$.email", is("EMAIL 1")));
 
-        mockMvc.perform(get("/api/users/set-phrases-to-users")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.phrasesAsigned").exists())
-                .andExpect(status().isOk());
+        verify(userService, times(1)).findByUsername(anyString());
+        verifyNoMoreInteractions(userService);
     }
 
     @Test
-    public void setPhrases_whenDBFailsThenThrowsException() throws Exception {
-       // when(historyService.save(any(History.class))).thenThrow(new DataAccessException("..."){});
-        when(userService.findAll()).thenReturn(dummyUsers);
-        when(userService.getAllPhrases()).thenReturn(dummyPhrases);
-        when(userService.filterPhraseByAvailability(anyList(), anyList())).thenReturn(dummyPhrases);
+    public void search_whenUsernameIsInvalid() throws Exception {
+        mockMvc.perform(get("/users/search/{username}", ""))
+                .andExpect(status().isBadRequest());
+    }
 
-        mockMvc.perform(get("/api/users/set-phrases-to-users")
-                .contentType("application/json"))
+    @Test
+    public void search_whenRecordDoesNotExist() throws Exception {
+        when(userService.findByUsername(anyString())).thenReturn(null);
+        mockMvc.perform(get("/users/search/{username}", "user1"))
                 //.andDo(print())
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isNotFound());
+
+        verify(userService, times(1)).findByUsername(anyString());
+        verifyNoMoreInteractions(userService);
     }
 
-    /* END SET PHRASES userController method tests */
+    @Test
+    public void search_whenDBFailsThenThrowsException() throws Exception {
+        when(userService.findByUsername(anyString())).thenThrow(new DataAccessException("..."){});
+        mockMvc.perform(get("/users/search/{username}", "user1"))
+                .andExpect(status().isInternalServerError());
+
+        verify(userService, times(1)).findByUsername(anyString());
+        verifyNoMoreInteractions(userService);
+    }
+
+    /* END DELETE userController method tests */
 }

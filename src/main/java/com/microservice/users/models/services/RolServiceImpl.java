@@ -11,7 +11,7 @@ import com.microservices.commons.models.entity.users.Rol;
 public class RolServiceImpl implements IRolService{
 
 	@Autowired
-	IRolDao rolDao;
+	private IRolDao rolDao;
 	
 	@Override
 	@Transactional(readOnly = true)

@@ -101,7 +101,7 @@ public class RolControllerTest {
     public void index() throws Exception {
         when(rolService.findAll()).thenReturn(dummyRoles);
 
-        mockMvc.perform(get("/api/roles")
+        mockMvc.perform(get("/roles")
                 .contentType("application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
@@ -118,7 +118,7 @@ public class RolControllerTest {
     public void show_withProperId() throws Exception {
         when(rolService.findById(1L)).thenReturn(rol1);
 
-        mockMvc.perform(get("/api/roles/{id}", 1))
+        mockMvc.perform(get("/roles/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.name", is("ROL1")))
@@ -130,14 +130,14 @@ public class RolControllerTest {
 
     @Test
     public void show_whenIdIsInvalid() throws Exception {
-        mockMvc.perform(get("/api/roles/{id}", "randomString"))
+        mockMvc.perform(get("/roles/{id}", "randomString"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     public void show_whenRecordDoesnotExist() throws Exception {
         when(rolService.findById(anyLong())).thenReturn(null);
-        mockMvc.perform(get("/api/roles/{id}", anyLong()))
+        mockMvc.perform(get("/roles/{id}", anyLong()))
                 .andExpect(status().isNotFound());
 
         verify(rolService, times(1)).findById(anyLong());
@@ -148,7 +148,7 @@ public class RolControllerTest {
     public void show_whenDBFailsThenThrowsException() throws Exception {
         when(rolService.findById(1L)).thenThrow(new DataAccessException("..."){});
 
-        mockMvc.perform(get("/api/roles/{id}", 1))
+        mockMvc.perform(get("/roles/{id}", 1))
                 .andExpect(status().isInternalServerError());
 
         verify(rolService, times(1)).findById(1L);
@@ -163,7 +163,7 @@ public class RolControllerTest {
     public void create_withProperRol() throws Exception {
         when(rolService.save(any(Rol.class))).thenReturn(rol1);
 
-        mockMvc.perform(post("/api/roles")
+        mockMvc.perform(post("/roles")
                 .content(objectMapper.writeValueAsString(rol1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -182,7 +182,7 @@ public class RolControllerTest {
     public void create_whenRolIsEmpty() throws Exception {
         when(utilService.listErrors(any())).thenReturn(emptyRolMessages);
 
-        mockMvc.perform(post("/api/roles")
+        mockMvc.perform(post("/roles")
                 .content(objectMapper.writeValueAsString(new Rol()))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -198,7 +198,7 @@ public class RolControllerTest {
     public void create_whenRolHasInvalidParams() throws Exception {
         when(utilService.listErrors(any())).thenReturn(invalidParamsMessages);
 
-        mockMvc.perform(post("/api/roles")
+        mockMvc.perform(post("/roles")
                 .content(objectMapper.writeValueAsString(invalidRol))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -214,7 +214,7 @@ public class RolControllerTest {
     public void create_whenDBFailsThenThrowsException() throws Exception {
         when(rolService.save(any(Rol.class))).thenThrow(new DataAccessException("..."){});
 
-        mockMvc.perform(post("/api/roles")
+        mockMvc.perform(post("/roles")
                 .content(objectMapper.writeValueAsString(rol1))
                 .contentType(MediaType.APPLICATION_JSON));
 
@@ -231,7 +231,7 @@ public class RolControllerTest {
         when(rolService.findById(anyLong())).thenReturn(rol1);
         when(rolService.save(any(Rol.class))).thenReturn(rol1);
 
-        mockMvc.perform(put("/api/roles/{id}", 1)
+        mockMvc.perform(put("/roles/{id}", 1)
                 .content(objectMapper.writeValueAsString(rol1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
@@ -249,7 +249,7 @@ public class RolControllerTest {
 
     @Test
     public void update_whenRolIsProper_andInvalidId() throws Exception {
-        mockMvc.perform(put("/api/roles/{id}", "randomString")
+        mockMvc.perform(put("/roles/{id}", "randomString")
                 .content(objectMapper.writeValueAsString(rol1))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -259,7 +259,7 @@ public class RolControllerTest {
     public void update_whenRolIsEmpty_AndProperId() throws Exception {
         when(utilService.listErrors(any())).thenReturn(emptyRolMessages);
 
-        mockMvc.perform(put("/api/roles/{id}", 1)
+        mockMvc.perform(put("/roles/{id}", 1)
                 .content(objectMapper.writeValueAsString(new Rol()))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -275,7 +275,7 @@ public class RolControllerTest {
     public void update_whenRolIsInvalid_AndProperId() throws Exception {
         when(utilService.listErrors(any())).thenReturn(invalidParamsMessages);
 
-        mockMvc.perform(put("/api/roles/{id}", 1)
+        mockMvc.perform(put("/roles/{id}", 1)
                 .content(objectMapper.writeValueAsString(invalidRol))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -291,7 +291,7 @@ public class RolControllerTest {
     public void update_whenRolIsNotFound() throws Exception {
         when(rolService.findById(anyLong())).thenReturn(null);
 
-        mockMvc.perform(put("/api/roles/{id}", anyLong())
+        mockMvc.perform(put("/roles/{id}", anyLong())
                 .content(objectMapper.writeValueAsString(rol1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -306,7 +306,7 @@ public class RolControllerTest {
         when(rolService.save(any(Rol.class))).thenThrow(new DataAccessException("..."){});
         when(rolService.findById(anyLong())).thenReturn(rol1);
 
-        mockMvc.perform(put("/api/roles/{id}", 1)
+        mockMvc.perform(put("/roles/{id}", 1)
                 .content(objectMapper.writeValueAsString(rol1))
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
@@ -325,7 +325,7 @@ public class RolControllerTest {
     public void delete_withProperId() throws Exception {
         doNothing().when(rolService).delete(anyLong());
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/roles/{id}", 1))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/roles/{id}", 1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.msg").exists())
                 .andExpect(jsonPath("$.msg", is(CrudMessagesEnum.DELETED.getMessage())));
@@ -337,7 +337,7 @@ public class RolControllerTest {
     @Test
     public void delete_withInvalidId() throws Exception {
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/roles/{id}", "randomString"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/roles/{id}", "randomString"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -345,7 +345,7 @@ public class RolControllerTest {
     public void delete_whenRolIsNotFoundThenThrowException() throws Exception {
         doThrow(new DataAccessException("..."){}).when(rolService).delete(anyLong());
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/roles/{id}", anyLong())
+        mockMvc.perform(MockMvcRequestBuilders.delete("/roles/{id}", anyLong())
                 .contentType(MediaType.APPLICATION_JSON))
                 //.andDo(print())
                 .andExpect(status().isInternalServerError());

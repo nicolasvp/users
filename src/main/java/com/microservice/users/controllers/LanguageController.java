@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 import com.microservices.commons.models.services.IUtilService;
+import com.microservices.commons.utils.Messages;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +30,9 @@ import com.microservices.commons.exceptions.NullRecordException;
 import com.microservices.commons.models.entity.users.Language;
 import com.microservice.users.models.services.ILanguageService;
 
+@Slf4j
 @RestController
 public class LanguageController {
-
-	protected Logger LOGGER = LoggerFactory.getLogger(LanguageController.class);
 	
 	@Autowired
 	private ILanguageService languageService;
@@ -50,13 +51,16 @@ public class LanguageController {
 		Language language = null;
 
 		try {
+			log.info(Messages.findObjectMessage("Language", id.toString()));
 			language = languageService.findById(id);
 		} catch (DataAccessException e) {
+			log.error(Messages.errorDatabaseAccessMessage(e.getMessage()));
 			throw new DatabaseAccessException(DatabaseMessagesEnum.ACCESS_DATABASE.getMessage(), e);
 		}
 
 		// return error if the record non exist
 		if (language == null) {
+			log.error(Messages.nullObjectMessage("Language", id.toString()));
 			throw new NullRecordException();
 		}
 
@@ -71,13 +75,16 @@ public class LanguageController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
+			log.error(Messages.errorsCreatingObjectMessage("Language"));
 			response.put("errors", utilService.listErrors(result));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
+			log.info(Messages.creatingObjectMessage("Language"));
 			newLanguage = languageService.save(language);
 		} catch (DataAccessException e) {
+			log.error(Messages.errorDatabaseCreateMessage("Language", e.toString()));
 			throw new DatabaseAccessException(DatabaseMessagesEnum.STORE_RECORD.getMessage(), e);
 		}
 
@@ -96,19 +103,23 @@ public class LanguageController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
+			log.error(Messages.errorsUpdatingObjectMessage("Language", id.toString()));
 			response.put("errors", utilService.listErrors(result));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
 		// return error if the record non exist
 		if (languageFromDB == null) {
+			log.error(Messages.nullObjectMessage("Language", id.toString()));
 			throw new NullRecordException();
 		}
 
 		try {
+			log.info(Messages.updatingObjectMessage("Language", id.toString()));
 			languageFromDB.setName(language.getName());
 			languageUpdated = languageService.save(languageFromDB);
 		} catch (DataAccessException e) {
+			log.error(Messages.errorDatabaseUpdateMessage("Language", id.toString(), e.getMessage()));
 			throw new DatabaseAccessException(DatabaseMessagesEnum.UPDATE_RECORD.getMessage(), e);
 		}
 
@@ -124,8 +135,10 @@ public class LanguageController {
 		Map<String, Object> response = new HashMap<>();
 
 		try {
+			log.info(Messages.deletingObjectMessage("Language", id.toString()));
 			languageService.delete(id);
 		} catch (DataAccessException e) {
+			log.error(Messages.errorDatabaseDeleteMessage("Language", id.toString(), e.getMessage()));
 			throw new DatabaseAccessException(DatabaseMessagesEnum.DELETE_RECORD.getMessage(), e);
 		}
 

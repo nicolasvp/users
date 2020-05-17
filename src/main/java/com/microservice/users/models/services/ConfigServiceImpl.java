@@ -11,7 +11,7 @@ import com.microservices.commons.models.entity.users.Config;
 public class ConfigServiceImpl implements IConfigService {
 
 	@Autowired
-	IConfigDao configDao;
+	private IConfigDao configDao;
 	
 	@Override
 	@Transactional(readOnly = true)

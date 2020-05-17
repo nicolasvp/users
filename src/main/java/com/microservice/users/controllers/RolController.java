@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 import com.microservices.commons.models.services.IUtilService;
+import com.microservices.commons.utils.Messages;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +30,9 @@ import com.microservices.commons.exceptions.NullRecordException;
 import com.microservices.commons.models.entity.users.Rol;
 import com.microservice.users.models.services.IRolService;
 
+@Slf4j
 @RestController
 public class RolController {
-
-	protected Logger LOGGER = LoggerFactory.getLogger(RolController.class);
 	
 	@Autowired
 	private IRolService rolService;
@@ -50,12 +51,15 @@ public class RolController {
 		Rol rol = null;
 
 		try {
+			log.info(Messages.findObjectMessage("Rol", id.toString()));
 			rol = rolService.findById(id);
 		} catch (DataAccessException e) {
+			log.error(Messages.errorDatabaseAccessMessage(e.getMessage()));
 			throw new DatabaseAccessException(DatabaseMessagesEnum.ACCESS_DATABASE.getMessage(), e);
 		}
 
 		if (rol == null) {
+			log.error(Messages.nullObjectMessage("Rol", id.toString()));
 			throw new NullRecordException();
 		}
 
@@ -70,13 +74,16 @@ public class RolController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
+			log.error(Messages.errorsCreatingObjectMessage("Rol"));
 			response.put("errors", utilService.listErrors(result));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
 		try {
+			log.info(Messages.creatingObjectMessage("Rol"));
 			newRol = rolService.save(rol);
 		} catch (DataAccessException e) {
+			log.error(Messages.errorDatabaseCreateMessage("Rol", e.toString()));
 			throw new DatabaseAccessException(DatabaseMessagesEnum.STORE_RECORD.getMessage(), e);
 		}
 
@@ -95,20 +102,24 @@ public class RolController {
 
 		// if validation fails, list all errors and return them
 		if(result.hasErrors()) {
+			log.error(Messages.errorsUpdatingObjectMessage("Rol", id.toString()));
 			response.put("errors", utilService.listErrors(result));
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		
 		// return error if the record non exist
 		if (rolFromDB == null) {
+			log.error(Messages.nullObjectMessage("Rol", id.toString()));
 			throw new NullRecordException();
 		}
 
 		try {
+			log.info(Messages.updatingObjectMessage("Rol", id.toString()));
 			rolFromDB.setName(rol.getName());
 			rolFromDB.setDescription(rol.getDescription());
 			rolUpdated = rolService.save(rolFromDB);
 		} catch (DataAccessException e) {
+			log.error(Messages.errorDatabaseUpdateMessage("Rol", id.toString(), e.getMessage()));
 			throw new DatabaseAccessException(DatabaseMessagesEnum.UPDATE_RECORD.getMessage(), e);
 		}
 
@@ -124,8 +135,10 @@ public class RolController {
 		Map<String, Object> response = new HashMap<>();
 
 		try {
+			log.info(Messages.deletingObjectMessage("Rol", id.toString()));
 			rolService.delete(id);
 		} catch (DataAccessException e) {
+			log.error(Messages.errorDatabaseDeleteMessage("Rol", id.toString(), e.getMessage()));
 			throw new DatabaseAccessException(DatabaseMessagesEnum.DELETE_RECORD.getMessage(), e);
 		}
 

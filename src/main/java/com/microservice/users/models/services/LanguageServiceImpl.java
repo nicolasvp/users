@@ -11,7 +11,7 @@ import com.microservices.commons.models.entity.users.Language;
 public class LanguageServiceImpl implements ILanguageService{
 
 	@Autowired
-	ILanguageDao languageDao;
+	private ILanguageDao languageDao;
 	
 	@Override
 	@Transactional(readOnly = true)
