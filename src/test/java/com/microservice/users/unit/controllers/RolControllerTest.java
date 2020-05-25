@@ -1,6 +1,7 @@
-package com.microservice.users.controllers;
+package com.microservice.users.unit.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microservice.users.controllers.RolController;
 import com.microservices.commons.enums.CrudMessagesEnum;
 import com.microservices.commons.models.entity.users.Rol;
 import com.microservice.users.models.services.IRolService;

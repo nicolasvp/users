@@ -1,12 +1,9 @@
-package com.microservice.users.controllers;
+package com.microservice.users.unit.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.microservice.users.controllers.UserController;
 import com.microservices.commons.enums.CrudMessagesEnum;
-import com.microservices.commons.models.entity.users.Config;
-import com.microservices.commons.models.entity.delivery.History;
-import com.microservices.commons.models.entity.users.Language;
 import com.microservices.commons.models.entity.users.User;
-//import com.microservice.users.models.services.IHistoryService;
 import com.microservice.users.models.services.IUserService;
 import com.microservices.commons.models.services.IUtilService;
 import com.microservices.commons.models.entity.phrases.Author;
@@ -56,7 +53,6 @@ public class UserControllerTest {
     private UserController userController;
 
     private List<User> dummyUsers;
-    private List<Phrase> dummyPhrases;
 
     private List<String> invalidParamsMessages = new ArrayList<>();
     private List<String> emptyUserMessages = new ArrayList<>();
@@ -91,20 +87,17 @@ public class UserControllerTest {
         user1.setLastName("LASTNAME 1");
         user1.setEmail("EMAIL 1");
         user1.setPassword("PASSWORD 1");
-        user1.setConfig(new Config(user1, new Language(), 1, true, new Date()));
         //user1.setHistory(Arrays.asList(new History(user1, 1L, new Date())));
 
         user2.setId(2L);
         user2.setUsername("USERNAME 2");
         user2.setName("USER 2");
         user2.setEmail("EMAIL 2");
-        user2.setConfig(new Config(user2, new Language(), 2, true, new Date()));
 
         user3.setId(3L);
         user3.setUsername("USERNAME 3");
         user3.setName("USER 3");
         user3.setEmail("EMAIL 3");
-        user3.setConfig(new Config(user3, new Language(), 3, true, new Date()));
 
         dummyUsers = Arrays.asList(user1, user2, user3);
     }
@@ -113,8 +106,6 @@ public class UserControllerTest {
         phrase1 = new Phrase(1L, "TEST1", 1L, new Type(1L, "test1", new Date()), new Author(), new Image());
         phrase2 = new Phrase(2L, "TEST2", 2L, new Type(2L, "test2", new Date()), new Author(), new Image());
         phrase3 = new Phrase(3L, "TEST3", 3L, new Type(3L, "test3", new Date()), new Author(), new Image());
-
-        dummyPhrases = Arrays.asList(phrase1, phrase2, phrase3);
     }
 
     /**
@@ -132,17 +123,19 @@ public class UserControllerTest {
     }
 
     private void setInvalidUserParamsMessages() {
-        invalidParamsMessages.add("The name field must have between 1 and 50 characters");
-        invalidParamsMessages.add("The email field must have between 1 and 30 characters");
-        invalidParamsMessages.add("The lastName field must have between 1 and 50 characters");
-        invalidParamsMessages.add("The password field must have between 1 and 100 characters");
+        invalidParamsMessages.add("The field username must have between 1 and 20 characters");
+        invalidParamsMessages.add("The field name must have between 1 and 50 characters");
+        invalidParamsMessages.add("The field last name must have between 1 and 50 characters");
+        invalidParamsMessages.add("The field email must have between 1 and 30 characters");
+        invalidParamsMessages.add("The field password must have between 1 and 100 characters");
     }
 
     private void setEmptyUserMessages() {
-        emptyUserMessages.add("The name field can't be empty");
-        emptyUserMessages.add("The email field can't be empty");
-        emptyUserMessages.add("The lastName field can't be empty");
-        emptyUserMessages.add("The password field can't be empty");
+        emptyUserMessages.add("The field username must not be empty");
+        emptyUserMessages.add("The field name must not be empty");
+        emptyUserMessages.add("The field last name must not be empty");
+        emptyUserMessages.add("The field email must not be empty");
+        emptyUserMessages.add("The field password must not be empty");
     }
 
     @Test
@@ -240,11 +233,12 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
-                .andExpect(jsonPath("$.errors", hasSize(4)))
-                .andExpect(jsonPath("$.errors", hasItem("The name field can't be empty")))
-                .andExpect(jsonPath("$.errors", hasItem("The email field can't be empty")))
-                .andExpect(jsonPath("$.errors", hasItem("The lastName field can't be empty")))
-                .andExpect(jsonPath("$.errors", hasItem("The password field can't be empty")));
+                .andExpect(jsonPath("$.errors", hasSize(5)))
+                .andExpect(jsonPath("$.errors", hasItem(emptyUserMessages.get(0))))
+                .andExpect(jsonPath("$.errors", hasItem(emptyUserMessages.get(1))))
+                .andExpect(jsonPath("$.errors", hasItem(emptyUserMessages.get(2))))
+                .andExpect(jsonPath("$.errors", hasItem(emptyUserMessages.get(3))))
+                .andExpect(jsonPath("$.errors", hasItem(emptyUserMessages.get(4))));
     }
 
     @Test
@@ -258,11 +252,12 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
-                .andExpect(jsonPath("$.errors", hasSize(4)))
-                .andExpect(jsonPath("$.errors", hasItem("The name field must have between 1 and 50 characters")))
-                .andExpect(jsonPath("$.errors", hasItem("The email field must have between 1 and 30 characters")))
-                .andExpect(jsonPath("$.errors", hasItem("The lastName field must have between 1 and 50 characters")))
-                .andExpect(jsonPath("$.errors", hasItem("The password field must have between 1 and 100 characters")));
+                .andExpect(jsonPath("$.errors", hasSize(5)))
+                .andExpect(jsonPath("$.errors", hasItem(invalidParamsMessages.get(0))))
+                .andExpect(jsonPath("$.errors", hasItem(invalidParamsMessages.get(1))))
+                .andExpect(jsonPath("$.errors", hasItem(invalidParamsMessages.get(2))))
+                .andExpect(jsonPath("$.errors", hasItem(invalidParamsMessages.get(3))))
+                .andExpect(jsonPath("$.errors", hasItem(invalidParamsMessages.get(4))));
     }
 
     @Test
@@ -323,11 +318,12 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
-                .andExpect(jsonPath("$.errors", hasSize(4)))
-                .andExpect(jsonPath("$.errors", hasItem("The name field can't be empty")))
-                .andExpect(jsonPath("$.errors", hasItem("The email field can't be empty")))
-                .andExpect(jsonPath("$.errors", hasItem("The lastName field can't be empty")))
-                .andExpect(jsonPath("$.errors", hasItem("The password field can't be empty")));
+                .andExpect(jsonPath("$.errors", hasSize(5)))
+                .andExpect(jsonPath("$.errors", hasItem(emptyUserMessages.get(0))))
+                .andExpect(jsonPath("$.errors", hasItem(emptyUserMessages.get(1))))
+                .andExpect(jsonPath("$.errors", hasItem(emptyUserMessages.get(2))))
+                .andExpect(jsonPath("$.errors", hasItem(emptyUserMessages.get(3))))
+                .andExpect(jsonPath("$.errors", hasItem(emptyUserMessages.get(4))));
     }
 
     @Test
@@ -341,11 +337,12 @@ public class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(jsonPath("$.errors").exists())
-                .andExpect(jsonPath("$.errors", hasSize(4)))
-                .andExpect(jsonPath("$.errors", hasItem("The name field must have between 1 and 50 characters")))
-                .andExpect(jsonPath("$.errors", hasItem("The email field must have between 1 and 30 characters")))
-                .andExpect(jsonPath("$.errors", hasItem("The lastName field must have between 1 and 50 characters")))
-                .andExpect(jsonPath("$.errors", hasItem("The password field must have between 1 and 100 characters")));
+                .andExpect(jsonPath("$.errors", hasSize(5)))
+                .andExpect(jsonPath("$.errors", hasItem(invalidParamsMessages.get(0))))
+                .andExpect(jsonPath("$.errors", hasItem(invalidParamsMessages.get(1))))
+                .andExpect(jsonPath("$.errors", hasItem(invalidParamsMessages.get(2))))
+                .andExpect(jsonPath("$.errors", hasItem(invalidParamsMessages.get(3))))
+                .andExpect(jsonPath("$.errors", hasItem(invalidParamsMessages.get(4))));
     }
 
     @Test
