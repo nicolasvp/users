@@ -141,6 +141,7 @@ public class UserController {
 			userFromDB.setLastName(user.getLastName());
 			userFromDB.setEmail(user.getEmail());
 			userFromDB.setPassword(user.getPassword());
+			userFromDB.setPhraseType(user.getPhraseType() != null ? user.getPhraseType() : 0);
 			userUpdated = userService.save(userFromDB);
 		} catch (DataAccessException e) {
 			log.error(Messages.errorDatabaseUpdateMessage("User", id.toString(), e.getMessage()));
