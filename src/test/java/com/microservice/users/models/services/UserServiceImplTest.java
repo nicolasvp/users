@@ -70,7 +70,7 @@ public class UserServiceImplTest {
 	}
 
 	private void dummyHistory(){
-		history.setId(1L);
+		//history.setId(1L);
 		history.setPhraseId(1L);
 		history.setCreatedAt(new Date());
 	}
